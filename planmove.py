@@ -13,10 +13,10 @@ alpha = 0
 beta = 0
 
 # Constants for movement algorithm
-k_ro = 1
+k_ro = 0.3
 k_alpha = 8
 k_beta = -1.5
-l = 1
+l = -0.1
 r = 1
 
 # Constants
@@ -236,6 +236,7 @@ def obstacleAvoidance():
     # No obstacle avoidance by default, just move to the ball
     target_x = PLAYFIELDCORNERS[2]
     target_y = PLAYFIELDCORNERS[3]
+
     return (target_x, target_y)
 
 # We will calculate time
@@ -259,34 +260,34 @@ while True:
         (target_x, target_y) = obstacleAvoidance()
         (vL, vR, ro, alpha, beta) = moveToDot(target_x, target_y)
 
-        if vL > MAXVELOCITY or vR > MAXVELOCITY:
-            if vL > vR:
-                diff = vR / vL
-                vL = 0.3
-                vR = vL * diff
-            elif vR > vL:
-                diff = vL / vR
-                vR = 0.3
-                vL = vR * diff
-            else:
-                vL = 0.3
-                vR = 0.3
+        # if vL > MAXVELOCITY or vR > MAXVELOCITY:
+        #     if vL > vR:
+        #         diff = vR / vL
+        #         vL = 0.3
+        #         vR = vL * diff
+        #     elif vR > vL:
+        #         diff = vL / vR
+        #         vR = 0.3
+        #         vL = vR * diff
+        #     else:
+        #         vL = 0.3
+        #         vR = 0.3
     else:
         print("stillMovingToDot")
         (vL, vR, ro, alpha, beta) = moveToDotAgain(target_x, target_y)
 
-        if vL > MAXVELOCITY or vR > MAXVELOCITY:
-            if vL > vR:
-                diff = vR / vL
-                vL = 0.3
-                vR = vL * diff
-            elif vR > vL:
-                diff = vL / vR
-                vR = 0.3
-                vL = vR * diff
-            else:
-                vL = 0.3
-                vR = 0.3
+        # if vL > MAXVELOCITY or vR > MAXVELOCITY:
+        #     if vL > vR:
+        #         diff = vR / vL
+        #         vL = 0.3
+        #         vR = vL * diff
+        #     elif vR > vL:
+        #         diff = vL / vR
+        #         vR = 0.3
+        #         vL = vR * diff
+        #     else:
+        #         vL = 0.3
+        #         vR = 0.3
 
     screen.fill(black)
     for loc in locationhistory:
