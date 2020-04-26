@@ -1,5 +1,5 @@
 # Made according to this (many thanks):
-# ttps://www.youtube.com/watch?v=Mdg9ElewwA0&feature=emb_logo
+# https://www.youtube.com/watch?v=Mdg9ElewwA0&feature=emb_logo
 
 import pygame, math, time, random
 import numpy as np
@@ -13,9 +13,9 @@ alpha = 0
 beta = 0
 
 # Constants for movement algorithm
-k_ro = 0.3
+k_ro = 0.5
 k_alpha = 8
-k_beta = -1.5
+k_beta = 1
 l = -0.1
 r = 1
 
@@ -234,8 +234,10 @@ def moveToDotAgain(target_x, target_y):
 
 def obstacleAvoidance():
     # No obstacle avoidance by default, just move to the ball
-    target_x = PLAYFIELDCORNERS[2]
-    target_y = PLAYFIELDCORNERS[3]
+    target_x = x + 0.5
+    target_y = y + 0.35
+    # target_x = PLAYFIELDCORNERS[2]
+    # target_y = PLAYFIELDCORNERS[3]
 
     return (target_x, target_y)
 
@@ -254,7 +256,7 @@ while True:
 
     # Planning
     disttotarget = math.sqrt((x - target_x)**2 + (y - target_y)**2)
-    if disttotarget < ROBOTRADIUS:
+    if disttotarget < (ROBOTRADIUS + 0.3):
         print("Calling Obstacle Avoidance algorithm")
         # Calculate best target point and call moveToDot
         (target_x, target_y) = obstacleAvoidance()
@@ -320,12 +322,25 @@ while True:
     (x, y, theta) = setNewPosition(vL, vR, x, y, theta, dt)
 
     moveBarriers(dt)
+
     # printBarriers()
+
+    # Check collision
+    distToObstacle = calculateClosestObstacleDistance(x, y)
+    if distToObstacle < 0.001:
+        print(distToObstacle)
+        print(x, y)
+        print("Crash!")
+        print("Result:", time.time() - startTime, "sec")
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
 
     # Check if robot has reached target
     disttotarget = math.sqrt((x - barriers[targetindex][0])**2 + (y - barriers[targetindex][1])**2)
     if disttotarget < (BARRIERRADIUS + ROBOTRADIUS):
-        print("Result: ", time.time() - startTime, "sec")
+        print("Result:", time.time() - startTime, "sec")
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
