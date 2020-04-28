@@ -40,7 +40,7 @@ class ScaleBasedObstacleDetector:
             for color, _ in reference_color:
                 distances[color].append((
                     numpy.linalg.norm(color - mean_color),
-                    (y, x)
+                    numpy.array((y, x))
                 ))
 
         return extract_closest_points(distances, reference_color, 2)
