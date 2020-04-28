@@ -47,7 +47,7 @@ size = [WIDTH, HEIGHT]
 u0 = WIDTH / 2
 v0 = HEIGHT / 2
 
-black = (20, 20, 40)
+black = (0, 0, 0)
 lightblue = (0, 120, 255)
 darkblue = (0, 40, 160)
 red = (255, 100, 0)

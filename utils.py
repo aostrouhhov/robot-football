@@ -145,17 +145,16 @@ def draw_scene(
     wly = y + (ROBOTWIDTH / 2.0) * math.cos(theta)
     ulx = u0 + k * wlx
     vlx = v0 - k * wly
-    pygame.draw.circle(screen, blue, (int(ulx), int(vlx)), int(k * WHEELBLOB))
+    pygame.draw.circle(screen, green, (int(ulx), int(vlx)), int(k * WHEELBLOB))
     # right wheel centre
     wrx = x + (ROBOTWIDTH / 2.0) * math.sin(theta)
     wry = y - (ROBOTWIDTH / 2.0) * math.cos(theta)
     urx = u0 + k * wrx
     vrx = v0 - k * wry
-    pygame.draw.circle(screen, blue, (int(urx), int(vrx)), int(k * WHEELBLOB))
+    pygame.draw.circle(screen, green, (int(urx), int(vrx)), int(k * WHEELBLOB))
 
     # Save picture of screen for balls detection
     screen_picture = pygame.surfarray.pixels3d(screen)
-    print(screen_picture.shape)
     # After this draw circles
     # draw_ball_edges(screen, barriers[-1:], ball_edge_color)
     # draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
