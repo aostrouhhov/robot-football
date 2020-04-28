@@ -111,3 +111,14 @@ def move_to_dot_again(ro, alpha, beta, theta):
     vl_chosen, vr_chosen = calculate_phi_vector(ksi, theta)
 
     return vl_chosen, vr_chosen, ro_new, alpha_new, beta_new
+
+
+def cast_detector_coordinates(coords):
+    assert len(coords.shape) == 2 and coords.shape[1] == 2, f'Expected np.array of shape (N, 2)'
+    local_coords = coords.copy()
+    # shift
+    local_coords[:, 0] = local_coords[:, 0] - WIDTH / 2
+    local_coords[:, 1] = local_coords[:, 1] - HEIGHT / 2
+    # scale
+    local_coords = local_coords / k
+    return local_coords
