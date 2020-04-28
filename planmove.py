@@ -40,7 +40,10 @@ def main():
 
     # Main loop
     while True:
-        event_list = pygame.event.get()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
         # For display of trail
         location_history.append((x, y))
