@@ -16,7 +16,7 @@ def extract_closest_points(
                 [
                     (round(x * scale), round(y * scale))
                     for i, (dist, (x, y)) in enumerate(true_points[:cnt])
-                    if i == 0 or dist < 150
+                    if i == 0 or dist < 180
                 ]
             )
         )
