@@ -155,7 +155,6 @@ def draw_scene(
 
     # Save picture of screen for balls detection
     screen_picture = pygame.surfarray.pixels3d(screen)
-    print(screen_picture.shape)
     # After this draw circles
     # draw_ball_edges(screen, barriers[-1:], ball_edge_color)
     # draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
