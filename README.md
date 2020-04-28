@@ -3,7 +3,7 @@
 
 ## Как запустить
 ```
-$ pip3 install numpy pygame
+$ pip3 install -r requirements.txt
 $ python3 planmove.py
 ```
 ## Как работает симуляция

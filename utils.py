@@ -1,7 +1,9 @@
 import math
 
 import numpy
+import pygame
 
+from barriers_operations import draw_barriers, draw_ball_edges
 from constants import *
 
 
@@ -118,7 +120,45 @@ def cast_detector_coordinates(coords):
     local_coords = coords.copy()
     # shift
     local_coords[:, 0] = local_coords[:, 0] - WIDTH / 2
-    local_coords[:, 1] = local_coords[:, 1] - HEIGHT / 2
+    local_coords[:, 1] = HEIGHT / 2 - local_coords[:, 1]
     # scale
     local_coords = local_coords / k
     return local_coords
+
+
+def draw_scene(
+        screen, location_history, barriers, target_index, x, y, theta,
+        ball_predicted_positions, barriers_predicted_positions
+):
+    screen.fill(black)
+    for loc in location_history:
+        pygame.draw.circle(screen, grey, (int(u0 + k * loc[0]), int(v0 - k * loc[1])), 3, 0)
+    draw_barriers(screen, barriers, target_index)
+
+    # Draw robot
+    u = u0 + k * x
+    v = v0 - k * y
+    pygame.draw.circle(screen, white, (int(u), int(v)), int(k * ROBOTRADIUS), 3)
+    # Draw wheels as little blobs, so you can see robot orientation
+    # left wheel centre
+    wlx = x - (ROBOTWIDTH / 2.0) * math.sin(theta)
+    wly = y + (ROBOTWIDTH / 2.0) * math.cos(theta)
+    ulx = u0 + k * wlx
+    vlx = v0 - k * wly
+    pygame.draw.circle(screen, blue, (int(ulx), int(vlx)), int(k * WHEELBLOB))
+    # right wheel centre
+    wrx = x + (ROBOTWIDTH / 2.0) * math.sin(theta)
+    wry = y - (ROBOTWIDTH / 2.0) * math.cos(theta)
+    urx = u0 + k * wrx
+    vrx = v0 - k * wry
+    pygame.draw.circle(screen, blue, (int(urx), int(vrx)), int(k * WHEELBLOB))
+
+    # Save picture of screen for balls detection
+    screen_picture = pygame.surfarray.pixels3d(screen)
+    print(screen_picture.shape)
+    # After this draw circles
+    # draw_ball_edges(screen, barriers[-1:], ball_edge_color)
+    # draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
+    draw_ball_edges(screen, ball_predicted_positions, ball_edge_color)
+    draw_ball_edges(screen, barriers_predicted_positions, barrier_edge_color)
+    return screen_picture
