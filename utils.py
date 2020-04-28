@@ -120,7 +120,7 @@ def cast_detector_coordinates(coords):
     local_coords = coords.copy()
     # shift
     local_coords[:, 0] = local_coords[:, 0] - WIDTH / 2
-    local_coords[:, 1] = local_coords[:, 1] - HEIGHT / 2
+    local_coords[:, 1] = HEIGHT / 2 - local_coords[:, 1]
     # scale
     local_coords = local_coords / k
     return local_coords

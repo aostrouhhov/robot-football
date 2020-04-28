@@ -59,8 +59,8 @@ def generate_barriers(num):
 
     # Ball will be just another barrier which doesn't move
     (bx, by, vx, vy) = (
-        PLAYFIELDCORNERS[2],
-        PLAYFIELDCORNERS[3],
+        PLAYFIELDCORNERS[2] - BARRIERRADIUS * 2,
+        PLAYFIELDCORNERS[3] - BARRIERRADIUS * 2,
         random.gauss(0.0, BARRIERVELOCITYRANGE),
         random.gauss(0.0, BARRIERVELOCITYRANGE),
     )
@@ -74,4 +74,4 @@ def draw_ball_edges(surface: pygame.Surface, ball_coords: List[Tuple[float, floa
     for ball_coord in ball_coords:
         x = int(u0 + k * ball_coord[0])
         y = int(v0 - k * ball_coord[1])
-        pygame.draw.circle(surface, color, (x, y), int(k * BARRIERRADIUS), 1)
+        pygame.draw.circle(surface, color, (x, y), int(k * BARRIERRADIUS), 3)
