@@ -14,23 +14,24 @@ beta = 0
 
 # Constants for movement algorithm
 k_ro = 0.5
-k_alpha = 8
+k_alpha = 5
 k_beta = 1
 l = -0.1
 r = 1
 
 # Constants
 # Units here are in metres and radians using our standard coordinate frame
-BARRIERRADIUS = 0.1
-ROBOTRADIUS = 0.1
+BARRIERRADIUS = 0.14
+ROBOTRADIUS = 0.14
+WHEELBLOB = 0.04
 ROBOTWIDTH = 2 * ROBOTRADIUS
 MAXVELOCITY = 0.3      # ms^(-1) max speed of each wheel
 BARRIERVELOCITYRANGE = 0.15
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5) # The region we will fill with obstacles
 
 # Starting pose of robot
-x = 0
-y = 0
+x = -4.0
+y = -2.5
 theta = 0
 
 # Starting wheel velocities
@@ -92,8 +93,8 @@ def moveBarriers(dt):
 # Vertical screen coordinate:       v = v0 - k * y
 
 # Set the width and height of the screen (pixels)
-WIDTH = 1000
-HEIGHT = 600
+WIDTH = 800
+HEIGHT = 500
 
 size = [WIDTH, HEIGHT]
 black = (20, 20, 40)
@@ -195,8 +196,8 @@ def calculatePhiVector(ksi):
     res = 1/r * np.dot(matrix_1, matrix_2)
     phi = np.dot(res, ksi)
 
-    # print(pygame.surfarray.array2d(screen))
     return (phi[0][0], phi[1][0])
+
 
 def moveToDot(target_x, target_y):
     # x and y here are robot coordinates
@@ -257,8 +258,13 @@ while True:
     # Planning
     disttotarget = math.sqrt((x - target_x)**2 + (y - target_y)**2)
     if disttotarget < (ROBOTRADIUS + 0.3):
-        print("Calling Obstacle Avoidance algorithm")
+        # print("Calling Obstacle Avoidance algorithm")
         # Calculate best target point and call moveToDot
+
+        # Identify ball nad players positions
+        screen_picture = pygame.surfarray.array2d(screen)
+        # (ball_predicted_positions, barriers_predicted_positions) = getBarriersPositions(screen_picture, ((red, 1), (lightblue, 9)))
+
         (target_x, target_y) = obstacleAvoidance()
         (vL, vR, ro, alpha, beta) = moveToDot(target_x, target_y)
 
@@ -275,7 +281,7 @@ while True:
         #         vL = 0.3
         #         vR = 0.3
     else:
-        print("stillMovingToDot")
+        # print("stillMovingToDot")
         (vL, vR, ro, alpha, beta) = moveToDotAgain(target_x, target_y)
 
         # if vL > MAXVELOCITY or vR > MAXVELOCITY:
@@ -306,7 +312,6 @@ while True:
     wly = y + (ROBOTWIDTH/2.0) * math.cos(theta)
     ulx = u0 + k * wlx
     vlx = v0 - k * wly
-    WHEELBLOB = 0.04
     pygame.draw.circle(screen, blue, (int(ulx), int(vlx)), int(k * WHEELBLOB))
     # right wheel centre
     wrx = x + (ROBOTWIDTH/2.0) * math.sin(theta)
@@ -328,8 +333,6 @@ while True:
     # Check collision
     distToObstacle = calculateClosestObstacleDistance(x, y)
     if distToObstacle < 0.001:
-        print(distToObstacle)
-        print(x, y)
         print("Crash!")
         print("Result:", time.time() - startTime, "sec")
         while True:
