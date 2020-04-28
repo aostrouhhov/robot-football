@@ -38,8 +38,12 @@ def main():
     target_x = x
     target_y = y
 
+    clock = pygame.time.Clock()
     # Main loop
     while True:
+        dt = clock.tick(60)
+        print(dt)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -78,7 +82,7 @@ def main():
             #         vr = 0.3
         else:
             # print("stillMovingToDot")
-            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, theta)
+            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, theta, dt)
 
             # if vl > MAXVELOCITY or vr > MAXVELOCITY:
             #     if vl > vr:
@@ -153,9 +157,6 @@ def main():
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return
-
-        # Sleeping dt here runs simulation in real-time
-        time.sleep(dt / 50)
 
 
 if __name__ == '__main__':

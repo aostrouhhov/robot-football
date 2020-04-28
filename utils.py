@@ -91,7 +91,7 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, theta):
     return vl_chosen, vr_chosen, ro_new, alpha_new, beta_new
 
 
-def move_to_dot_again(ro, alpha, beta, theta):
+def move_to_dot_again(ro, alpha, beta, theta, dt):
     change_rate = numpy.array(
         [
             [-k_ro * ro * math.cos(alpha)],

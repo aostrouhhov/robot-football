@@ -66,7 +66,6 @@ def generate_barriers(num):
     )
     barrier = [bx, by, vx, vy]
     barriers.append(barrier)
-    assert len(barriers) == num
     return barriers, num - 1
 
 

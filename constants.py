@@ -26,11 +26,8 @@ ROBOTRADIUS = 0.14
 WHEELBLOB = 0.04
 ROBOTWIDTH = 2 * ROBOTRADIUS
 MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
-BARRIERVELOCITYRANGE = 0.15
+BARRIERVELOCITYRANGE = 0.01
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
-
-# Time step delta to run control and simulation at
-dt = 0.1
 
 # Constants for graphics display
 # Transformation from metric world frame to graphics frame
