@@ -10,11 +10,13 @@ from barriers_operations import generate_barriers, move_barriers
 from constants import *
 from obstacle_avoidance import dump_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
+from obstacle_detection.scale_based import ScaleBasedObstacleDetector
 from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_closest_obstacle_distance, draw_scene, \
     cast_detector_coordinates
 
 obstacle_avoidance = dump_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
+# obstacle_detection = ScaleBasedObstacleDetector('SURF')
 
 
 def main():
@@ -44,13 +46,12 @@ def main():
 
     # Main loop
     while True:
-        draw_scene(
+        screen_picture = draw_scene(
             screen, location_history, barriers, target_index, x, y, theta,
             ball_predicted_positions, barriers_predicted_positions
         )
         # Update display
         pygame.display.flip()
-        screen_picture = pygame.surfarray.pixels3d(screen)
 
         # For display of trail
         location_history.append((x, y))

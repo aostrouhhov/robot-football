@@ -161,3 +161,4 @@ def draw_scene(
     # draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
     draw_ball_edges(screen, ball_predicted_positions, ball_edge_color)
     draw_ball_edges(screen, barriers_predicted_positions, barrier_edge_color)
+    return screen_picture
