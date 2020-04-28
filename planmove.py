@@ -8,10 +8,10 @@ import pygame
 
 from barriers_operations import draw_barriers, generate_barriers, draw_ball_edges, move_barriers
 from constants import *
-from obstacle_avoidance import dump_obstacle_avoidance
+from obstacle_avoidance import *
 from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_closest_obstacle_distance
 
-obstacle_avoidance = dump_obstacle_avoidance
+obstacle_avoidance = dwa
 
 
 def main():
@@ -58,7 +58,7 @@ def main():
             # ball_predicted_positions, barriers_predicted_positions =\
             #   get_barriers_positions(screen_picture, ((red, 1), (lightblue, 9)))
 
-            target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
+            target_x, target_y = obstacle_avoidance(x, y, vl, vr, theta, ball_predicted_positions, barriers_predicted_positions)
             vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, theta)
 
             # if vl > MAXVELOCITY or vr > MAXVELOCITY:
@@ -115,7 +115,7 @@ def main():
 
         # Save picture of screen for balls detection
         screen_picture = pygame.surfarray.pixels3d(screen)
-        print(screen_picture.shape)
+        # print(screen_picture.shape)
         # After this draw circles
         draw_ball_edges(screen, barriers[-1:], ball_edge_color)
         draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
