@@ -4,6 +4,7 @@
 import math
 import random
 import time
+from typing import Tuple, List
 
 import numpy as np
 import pygame
@@ -115,6 +116,8 @@ white = (255, 255, 255)
 blue = (0, 0, 255)
 grey = (70, 70, 70)
 green = (0, 204, 0)
+ball_edge_color = (255, 255, 0)
+barrier_edge_color = (0, 255, 0)
 k = 100  # pixels per metre for graphics
 
 # Screen centre will correspond to (x, y) = (0, 0)
@@ -257,6 +260,13 @@ def obstacle_avoidance():
     return target_x, target_y
 
 
+def draw_ball_edges(surface: pygame.Surface, ball_coords: List[Tuple[float, float]], color: Tuple[int, int, int]):
+    for ball_coord in ball_coords:
+        x = int(u0 + k * ball_coord[0])
+        y = int(v0 - k * ball_coord[1])
+        pygame.draw.circle(surface, color, (x, y), int(k * BARRIERRADIUS), 1)
+
+
 # We will calculate time
 startTime = time.time()
 
@@ -270,14 +280,16 @@ while True:
     # For display of trail
     locationhistory.append((x, y))
 
+    ball_predicted_positions = [(0.0, 0.0)]
+    barriers_predicted_positions = [(0.0, 0.0)] * 9
+
     # Planning
     disttotarget = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
     if disttotarget < (ROBOTRADIUS + 0.3):
         # print("Calling Obstacle Avoidance algorithm")
         # Calculate best target point and call moveToDot
 
-        # Identify ball nad players positions
-        screen_picture = pygame.surfarray.array2d(screen)
+        # Identify ball and players positions
         # ball_predicted_positions, barriers_predicted_positions = get_barriers_positions(screen_picture, ((red, 1), (lightblue, 9)))
 
         target_x, target_y = obstacle_avoidance()
@@ -334,6 +346,15 @@ while True:
     urx = u0 + k * wrx
     vrx = v0 - k * wry
     pygame.draw.circle(screen, blue, (int(urx), int(vrx)), int(k * WHEELBLOB))
+
+    # Save picture of screen for balls detection
+    screen_picture = pygame.surfarray.pixels3d(screen)
+    print(screen_picture.shape)
+    # And after this draw circles
+    draw_ball_edges(screen, barriers[-1:], ball_edge_color)
+    draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
+    # draw_ball_edges(screen, ball_predicted_positions, ball_edge_color)
+    # draw_ball_edges(screen, barriers_predicted_positions, barrier_edge_color)
 
     # Update display
     pygame.display.flip()
