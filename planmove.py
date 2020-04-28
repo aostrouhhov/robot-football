@@ -6,7 +6,7 @@ import time
 
 import pygame
 
-from barriers_operations import draw_barriers, generate_barriers, draw_ball_edges, move_barriers
+from barriers_operations import generate_barriers, move_barriers
 from constants import *
 from obstacle_avoidance import dump_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
@@ -70,35 +70,9 @@ def main():
 
             target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
             vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, theta)
-
-            # if vl > MAXVELOCITY or vr > MAXVELOCITY:
-            #     if vl > vr:
-            #         diff = vr / vl
-            #         vl = 0.3
-            #         vr = vl * diff
-            #     elif vr > vl:
-            #         diff = vl / vr
-            #         vr = 0.3
-            #         vl = vr * diff
-            #     else:
-            #         vl = 0.3
-            #         vr = 0.3
         else:
             # print("stillMovingToDot")
             vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, theta)
-
-            # if vl > MAXVELOCITY or vr > MAXVELOCITY:
-            #     if vl > vr:
-            #         diff = vr / vl
-            #         vl = 0.3
-            #         vr = vl * diff
-            #     elif vr > vl:
-            #         diff = vl / vr
-            #         vr = 0.3
-            #         vl = vr * diff
-            #     else:
-            #         vl = 0.3
-            #         vr = 0.3
 
         # Actually now move robot based on chosen vl and vr
         (x, y, theta) = set_new_position(vl, vr, x, y, theta, dt)
