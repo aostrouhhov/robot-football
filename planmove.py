@@ -250,6 +250,16 @@ def move_to_dot_again(target_x, target_y):
     return vLchosen, vRchosen, ro_new, alpha_new, beta_new
 
 
+def cast_detector_coordinates(coords):
+    assert len(coords.shape) == 2 and coords.shape[1] == 2, f'Expected np.array of shape (N, 2)'
+    local_coords = coords.copy()
+    # shift
+    local_coords[:, 0] = local_coords[:, 0] - WIDTH / 2
+    local_coords[:, 1] = local_coords[:, 1] - HEIGHT / 2
+    # scale
+    local_coords = local_coords / k
+    return local_coords
+
 def obstacle_avoidance():
     # No obstacle avoidance by default, just move to the ball
     target_x = x + 0.5
@@ -291,7 +301,7 @@ while True:
 
         # Identify ball and players positions
         # ball_predicted_positions, barriers_predicted_positions = get_barriers_positions(screen_picture, ((red, 1), (lightblue, 9)))
-
+        # use cast_detector_coordinates!!!
         target_x, target_y = obstacle_avoidance()
         vL, vR, ro, alpha, beta = move_to_dot(target_x, target_y)
 
