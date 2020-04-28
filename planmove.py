@@ -9,9 +9,12 @@ import pygame
 from barriers_operations import draw_barriers, generate_barriers, draw_ball_edges, move_barriers
 from constants import *
 from obstacle_avoidance import dump_obstacle_avoidance
-from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_closest_obstacle_distance
+from obstacle_detection.mser import MSERObstacleDetector
+from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_closest_obstacle_distance, draw_scene, \
+    cast_detector_coordinates
 
 obstacle_avoidance = dump_obstacle_avoidance
+obstacle_detection = MSERObstacleDetector()
 
 
 def main():
@@ -29,8 +32,6 @@ def main():
 
     # Used for displaying a trail of the robot's positions
     location_history = []
-    # Array for path choices use for graphics
-    paths_to_draw = []
 
     # We will calculate time
     start_time = time.time()
@@ -38,25 +39,34 @@ def main():
     target_x = x
     target_y = y
 
+    barriers_predicted_positions = []
+    ball_predicted_positions = []
+
     # Main loop
     while True:
-        event_list = pygame.event.get()
+        draw_scene(
+            screen, location_history, barriers, target_index, x, y, theta,
+            ball_predicted_positions, barriers_predicted_positions
+        )
+        # Update display
+        pygame.display.flip()
+        screen_picture = pygame.surfarray.pixels3d(screen)
 
         # For display of trail
         location_history.append((x, y))
 
-        ball_predicted_positions = [(0.0, 0.0)]
-        barriers_predicted_positions = [(0.0, 0.0)] * 9
+        # Identify a ball and players positions
+        ball_predicted_positions, barriers_predicted_positions = obstacle_detection.forward(
+            screen_picture, [(red, 1), (lightblue, 9)]
+        )
+        ball_predicted_positions = cast_detector_coordinates(ball_predicted_positions)
+        barriers_predicted_positions = cast_detector_coordinates(barriers_predicted_positions)
 
         # Planning
         dist_to_target = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
         if dist_to_target < (ROBOTRADIUS + 0.3):
             # print("Calling Obstacle Avoidance algorithm")
             # Calculate best target point and call moveToDot
-
-            # Identify a ball and players positions
-            # ball_predicted_positions, barriers_predicted_positions =\
-            #   get_barriers_positions(screen_picture, ((red, 1), (lightblue, 9)))
 
             target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
             vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, theta)
@@ -89,41 +99,6 @@ def main():
             #     else:
             #         vl = 0.3
             #         vr = 0.3
-
-        screen.fill(black)
-        for loc in location_history:
-            pygame.draw.circle(screen, grey, (int(u0 + k * loc[0]), int(v0 - k * loc[1])), 3, 0)
-        draw_barriers(screen, barriers, target_index)
-
-        # Draw robot
-        u = u0 + k * x
-        v = v0 - k * y
-        pygame.draw.circle(screen, white, (int(u), int(v)), int(k * ROBOTRADIUS), 3)
-        # Draw wheels as little blobs, so you can see robot orientation
-        # left wheel centre
-        wlx = x - (ROBOTWIDTH / 2.0) * math.sin(theta)
-        wly = y + (ROBOTWIDTH / 2.0) * math.cos(theta)
-        ulx = u0 + k * wlx
-        vlx = v0 - k * wly
-        pygame.draw.circle(screen, blue, (int(ulx), int(vlx)), int(k * WHEELBLOB))
-        # right wheel centre
-        wrx = x + (ROBOTWIDTH / 2.0) * math.sin(theta)
-        wry = y - (ROBOTWIDTH / 2.0) * math.cos(theta)
-        urx = u0 + k * wrx
-        vrx = v0 - k * wry
-        pygame.draw.circle(screen, blue, (int(urx), int(vrx)), int(k * WHEELBLOB))
-
-        # Save picture of screen for balls detection
-        screen_picture = pygame.surfarray.pixels3d(screen)
-        print(screen_picture.shape)
-        # After this draw circles
-        draw_ball_edges(screen, barriers[-1:], ball_edge_color)
-        draw_ball_edges(screen, barriers[:-1], barrier_edge_color)
-        # draw_ball_edges(screen, ball_predicted_positions, ball_edge_color)
-        # draw_ball_edges(screen, barriers_predicted_positions, barrier_edge_color)
-
-        # Update display
-        pygame.display.flip()
 
         # Actually now move robot based on chosen vl and vr
         (x, y, theta) = set_new_position(vl, vr, x, y, theta, dt)
