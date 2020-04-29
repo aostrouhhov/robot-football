@@ -39,9 +39,9 @@ class Drawable:
         pass
 
 
-class Player(Drawable):
+class MovingObstacle(Drawable):
     RADIUS = 0.14
-    VELOCITY_RANGE = 0.05
+    VELOCITY_RANGE = 0.0
 
     SCREEN_RADIUS = int(RADIUS * constants.k)
     COLOR = Color.LIGHTBLUE
@@ -61,18 +61,18 @@ class Player(Drawable):
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
-        result = Player(surface, x, y, vx, vy)
+        result = MovingObstacle(surface, x, y, vx, vy)
         return result
 
     def move(self, dt):
         self._x += self._vx * dt
-        if self._x < constants.WINDOW_CORNERS[0] + Player.RADIUS \
-                or self._x > constants.WINDOW_CORNERS[2] - Player.RADIUS:
+        if self._x < constants.WINDOW_CORNERS[0] + MovingObstacle.RADIUS \
+                or self._x > constants.WINDOW_CORNERS[2] - MovingObstacle.RADIUS:
             self._vx = -self._vx
 
         self._y += self._vy * dt
-        if self._y < constants.WINDOW_CORNERS[1] + Player.RADIUS or \
-                self._y > constants.WINDOW_CORNERS[3] - Player.RADIUS:
+        if self._y < constants.WINDOW_CORNERS[1] + MovingObstacle.RADIUS or \
+                self._y > constants.WINDOW_CORNERS[3] - MovingObstacle.RADIUS:
             self._vy = -self._vy
 
     def draw(self):
@@ -235,9 +235,9 @@ class Robot(Drawable):
         pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
         pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
 
-    def get_closest_dist_to_obstacle(self, players):
+    def get_closest_dist_to_obstacle(self, obstacles):
         closest_dist = 100000.0
-        for i, player in enumerate(players):
+        for i, player in enumerate(obstacles):
             p_x, p_y = player.get_pos()
 
             dx = p_x - self._x
@@ -246,7 +246,7 @@ class Robot(Drawable):
             d = math.sqrt(dx ** 2 + dy ** 2)
 
             # Distance between the closest touching point of circular robot and circular barrier
-            dist = d - Player.RADIUS - Robot.RADIUS
+            dist = d - MovingObstacle.RADIUS - Robot.RADIUS
             if dist < closest_dist:
                 closest_dist = dist
 

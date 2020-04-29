@@ -8,26 +8,26 @@ from typing import List
 
 import constants
 from constants import Color
-from models import Robot, Player, Ball
+from models import Robot, MovingObstacle, Ball
 from obstacle_avoidance import dump_obstacle_avoidance
 
 obstacle_avoidance = dump_obstacle_avoidance
 
 
-def _generate_players(screen, cnt=10):
+def _generate_obstacles(screen, cnt=10):
     barriers = []
     for i in range(cnt):
-        barrier = Player.create_randomized(screen)
+        barrier = MovingObstacle.create_randomized(screen)
         barriers.append(barrier)
     return barriers
 
 
-def _draw_scene(screen, robot: Robot, ball: Ball, players: List[Player]):
+def _draw_scene(screen, robot: Robot, ball: Ball, obstacles: List[MovingObstacle]):
     screen.fill(Color.BLACK)
     ball.draw()
     robot.draw()
-    for player in players:
-        player.draw()
+    for obstacle in obstacles:
+        obstacle.draw()
 
     pygame.display.flip()  # Update display
 
@@ -40,17 +40,14 @@ def main():
     screen = pygame.display.set_mode([constants.WINDOW_WIDTH, constants.WINDOW_HEIGHT])
 
     ball = Ball.create_randomized(screen)
-    players = _generate_players(screen, cnt=10)
+    obstacles = _generate_obstacles(screen, cnt=1)
     robot = Robot(screen, constants.x_start, constants.y_start, constants.theta_start)
-
-    target_x = robot.x
-    target_y = robot.y
 
     dt = 0.1
     is_finished = False
 
     while True:
-        _draw_scene(screen, robot, ball, players)
+        _draw_scene(screen, robot, ball, obstacles)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -63,7 +60,7 @@ def main():
         # ball_predicted_positions = ball.get_pos()
         # players_predicted_positions = [player.get_pos() for player in players]
 
-        obstacle_avoidance(robot, ball, players)
+        obstacle_avoidance(robot, ball, obstacles)
 
         # Planning
         # dist_to_target = math.sqrt((robot.x - target_x) ** 2 + (robot.y - target_y) ** 2)
@@ -90,10 +87,10 @@ def main():
         ball.move(dt)
         robot.move(dt)
 
-        for player in players:
+        for player in obstacles:
             player.move(dt)
 
-        dist_to_obstacle = robot.get_closest_dist_to_obstacle(players)
+        dist_to_obstacle = robot.get_closest_dist_to_obstacle(obstacles)
         if dist_to_obstacle < 0.001:
             print('Crash!')
             print(f'Result: {time.time() - start_time} sec')
@@ -101,7 +98,7 @@ def main():
             continue
 
         dist_to_target = robot.get_dist_to_target(ball)  # Check if robot has reached the target
-        if dist_to_target < Player.RADIUS + Robot.RADIUS:
+        if dist_to_target < MovingObstacle.RADIUS + Robot.RADIUS:
             print(f'Result: {time.time() - start_time} sec')
             is_finished = True
             continue
