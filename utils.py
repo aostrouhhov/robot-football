@@ -1,56 +1,7 @@
 import math
-
 import numpy
 
 from constants import *
-
-
-def set_new_position(v_l, v_r, x, y, theta, delta_t):
-    """Set new robot position in simulation
-    based on the current pose and velocity controls.
-
-    Uses time delta_t in the future.
-    Returns x_new, y_new, theta_new. Also, returns path which is just used for graphics.
-    """
-    # Simple special cases
-    # Straight line motion
-    if round(v_l, 3) == round(v_r, 3):
-        x_new = x + v_l * delta_t * math.cos(theta)
-        y_new = y + v_l * delta_t * math.sin(theta)
-        theta_new = theta
-
-    # Pure rotation motion
-    elif round(v_l, 3) == -round(v_r, 3):
-        x_new = x
-        y_new = y
-        theta_new = theta + ((v_r - v_l) * delta_t / ROBOTWIDTH)
-
-    else:
-        # Rotation and arc angle of general circular motion
-        # Using equations given in Lecture 2
-        _r = ROBOTWIDTH / 2.0 * (v_r + v_l) / (v_r - v_l)
-        delta_theta = (v_r - v_l) * delta_t / ROBOTWIDTH
-        x_new = x + _r * (math.sin(delta_theta + theta) - math.sin(theta))
-        y_new = y - _r * (math.cos(delta_theta + theta) - math.cos(theta))
-        theta_new = theta + delta_theta
-
-    return x_new, y_new, theta_new
-
-
-# Calculate the closest obstacle at a position (x, y)
-def calculate_closest_obstacle_distance(x, y, barriers, target_index):
-    closest_dist = 100000.0
-    # Calculate distance to closest obstacle
-    for i, barrier in enumerate(barriers):
-        if i != target_index:
-            dx = barrier[0] - x
-            dy = barrier[1] - y
-            d = math.sqrt(dx ** 2 + dy ** 2)
-            # Distance between the closest touching point of circular robot and circular barrier
-            dist = d - BARRIERRADIUS - ROBOTRADIUS
-            if dist < closest_dist:
-                closest_dist = dist
-    return closest_dist
 
 
 def calculate_xi_vector(v, omega, theta):
@@ -117,8 +68,8 @@ def cast_detector_coordinates(coords):
     assert len(coords.shape) == 2 and coords.shape[1] == 2, f'Expected np.array of shape (N, 2)'
     local_coords = coords.copy()
     # shift
-    local_coords[:, 0] = local_coords[:, 0] - WIDTH / 2
-    local_coords[:, 1] = local_coords[:, 1] - HEIGHT / 2
+    local_coords[:, 0] = local_coords[:, 0] - WINDOW_WIDTH / 2
+    local_coords[:, 1] = local_coords[:, 1] - WINDOW_HEIGHT / 2
     # scale
     local_coords = local_coords / k
     return local_coords

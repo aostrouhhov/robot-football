@@ -20,14 +20,8 @@ l = -0.1
 r = 1
 
 # Constants
-# Units here are in metres and radians using our standard coordinate frame
-BARRIERRADIUS = 0.14
-ROBOTRADIUS = 0.14
-WHEELBLOB = 0.04
-ROBOTWIDTH = 2 * ROBOTRADIUS
 MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
-BARRIERVELOCITYRANGE = 0.01
-PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
+WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 
 # Constants for graphics display
 # Transformation from metric world frame to graphics frame
@@ -36,21 +30,20 @@ PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstac
 # Vertical screen coordinate:       v = v0 - k * y
 
 # Set the width and height of the screen (pixels)
-WIDTH = 800
-HEIGHT = 500
-size = [WIDTH, HEIGHT]
-# Screen centre will correspond to (x, y) = (0, 0)
-u0 = WIDTH / 2
-v0 = HEIGHT / 2
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 500
 
-black = (20, 20, 40)
-lightblue = (0, 120, 255)
-darkblue = (0, 40, 160)
-red = (255, 100, 0)
-white = (255, 255, 255)
-blue = (0, 0, 255)
-grey = (70, 70, 70)
-green = (0, 204, 0)
-ball_edge_color = (255, 255, 0)
-barrier_edge_color = (0, 255, 0)
+
+class Color:
+    YELLOW = (255, 255, 0)
+    WHITE = (255, 255, 255)
+    BLACK = (20, 20, 40)
+    GREY = (70, 70, 70)
+    BLUE = (0, 0, 255)
+    RED = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    LIGHTBLUE = (0, 120, 255)
+
+
 k = 100  # pixels per metre for graphics
+
