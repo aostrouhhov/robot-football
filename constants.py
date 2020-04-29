@@ -17,7 +17,7 @@ ROBOTRADIUS = 0.14
 WHEELBLOB = 0.04
 ROBOTWIDTH = 2 * ROBOTRADIUS
 MAXVELOCITY = 1  # ms^(-1) max speed of each wheel
-MAXACCELERATION = 0.75 #ms^(-2) max rate we can change speed of each wheel
+MAXACCELERATION = 1 #ms^(-2) max rate we can change speed of each wheel
 BARRIERVELOCITYRANGE = 0.15
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 
