@@ -4,10 +4,10 @@ alpha_start = 0
 beta_start = 0
 
 # Constants for movement algorithm
-k_ro = 0.5
-k_alpha = 5
-k_beta = 1
-l = -0.1
+k_ro = 0.4
+k_alpha = 8
+k_beta = -4
+l = 0.1
 r = 1
 
 # Constants

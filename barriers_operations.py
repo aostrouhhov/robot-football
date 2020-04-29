@@ -16,17 +16,16 @@ def print_barriers(barriers):
 # Moves other players (not ball)
 def move_barriers(dt, barriers, target_index):
     for i, barrier in enumerate(barriers):
-        if i != target_index:  # we don't want to move the ball
-            barriers[i][0] += barriers[i][2] * dt
-            if barriers[i][0] < PLAYFIELDCORNERS[0]:
-                barriers[i][2] = -barriers[i][2]
-            if barriers[i][0] > PLAYFIELDCORNERS[2]:
-                barriers[i][2] = -barriers[i][2]
-            barriers[i][1] += barriers[i][3] * dt
-            if barriers[i][1] < PLAYFIELDCORNERS[1]:
-                barriers[i][3] = -barriers[i][3]
-            if barriers[i][1] > PLAYFIELDCORNERS[3]:
-                barriers[i][3] = -barriers[i][3]
+        barriers[i][0] += barriers[i][2] * dt
+        if barriers[i][0] < PLAYFIELDCORNERS[0]:
+            barriers[i][2] = -barriers[i][2]
+        if barriers[i][0] > PLAYFIELDCORNERS[2]:
+            barriers[i][2] = -barriers[i][2]
+        barriers[i][1] += barriers[i][3] * dt
+        if barriers[i][1] < PLAYFIELDCORNERS[1]:
+            barriers[i][3] = -barriers[i][3]
+        if barriers[i][1] > PLAYFIELDCORNERS[3]:
+            barriers[i][3] = -barriers[i][3]
     return barriers
 
 
@@ -57,8 +56,8 @@ def generate_barriers(num):
 
     # Ball will be just another barrier which doesn't move
     (bx, by, vx, vy) = (
-        PLAYFIELDCORNERS[2] - BARRIERRADIUS * 2,
-        PLAYFIELDCORNERS[3] - BARRIERRADIUS * 2,
+        PLAYFIELDCORNERS[2] - 1,
+        PLAYFIELDCORNERS[3] - 1,
         random.gauss(0.0, BARRIERVELOCITYRANGE),
         random.gauss(0.0, BARRIERVELOCITYRANGE),
     )
