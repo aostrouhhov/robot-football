@@ -26,7 +26,7 @@ def main():
     ro, alpha, beta = ro_start, alpha_start, beta_start
 
     # 9 obstacles and 1 target
-    barriers, target_index = generate_barriers(10)
+    barriers, target_index = generate_barriers(3)
 
     # Used for displaying a trail of the robot's positions
     location_history = []
@@ -59,16 +59,18 @@ def main():
         barriers_predicted_positions = cast_detector_coordinates(barriers_predicted_positions)
 
         # Planning
-        dist_to_target = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
-        if dist_to_target < (ROBOTRADIUS + 0.3):
-            # print("Calling Obstacle Avoidance algorithm")
-            # Calculate best target point and call moveToDot
+        #
+        # Call obstacle avoidance algorithm and move to returned dot.
+        #
+        # At the moment it has the same call rate as simulation update rate:
+        # it is called each quantum of time as the simulation updates.
+        #
+        # If obstacle_avoidance() call rate will be different than simulation update rate
+        # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
+        # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
 
-            target_x, target_y = obstacle_avoidance(x, y, vl, vr, theta, ball_predicted_positions, barriers_predicted_positions)
-            vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, theta)
-        else:
-            # print("stillMovingToDot")
-            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, theta)
+        target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
+        vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, ball_predicted_positions[0][0], ball_predicted_positions[0][1], theta)
 
         # Actually now move robot based on chosen vl and vr
         (x, y, theta) = set_new_position(vl, vr, x, y, theta, dt)
@@ -80,7 +82,7 @@ def main():
         # Check collision
         dist_to_obstacle = calculate_closest_obstacle_distance(x, y, barriers, target_index)
         dist_to_target = math.sqrt((x - barriers[target_index][0]) ** 2 + (y - barriers[target_index][1]) ** 2)
-        if dist_to_obstacle < 0.001 or dist_to_target < BARRIERRADIUS + ROBOTRADIUS:
+        if dist_to_obstacle < 0.001 or dist_to_target < BARRIERRADIUS + ROBOTRADIUS + 0.02:
             if dist_to_obstacle < 0.001:
                 print("Crash!")
             print("Result:", time.time() - start_time, "sec")

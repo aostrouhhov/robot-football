@@ -1,13 +1,10 @@
 import math
 from constants import *
-from utils import set_new_position, calculate_closest_obstacle_distance
 
-def dump_obstacle_avoidance(current_x, current_y, current_vl, current_vr, current_theta, target_ball, barriers):
+def dump_obstacle_avoidance(current_x, current_y, target_ball, barriers):
     # No obstacle avoidance by default, just move to the ball
-    target_x = current_x + 0.5
-    target_y = current_y + 0.35
-    # target_x = PLAYFIELDCORNERS[2]
-    # target_y = PLAYFIELDCORNERS[3]
+    target_x = target_ball[0][0]
+    target_y = target_ball[0][1]
 
     return target_x, target_y
 

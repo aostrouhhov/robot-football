@@ -4,10 +4,10 @@ alpha_start = 0
 beta_start = 0
 
 # Constants for movement algorithm
-k_ro = 0.5
-k_alpha = 5
-k_beta = 1
-l = -0.1
+k_ro = 0.4
+k_alpha = 8
+k_beta = -4
+l = 0.1
 r = 1
 
 # Constants
@@ -16,7 +16,7 @@ BARRIERRADIUS = 0.14
 ROBOTRADIUS = 0.14
 WHEELBLOB = 0.04
 ROBOTWIDTH = 2 * ROBOTRADIUS
-MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
+MAXVELOCITY = 1  # ms^(-1) max speed of each wheel
 MAXACCELERATION = 0.5 #ms^(-2) max rate we can change speed of each wheel
 BARRIERVELOCITYRANGE = 0.15
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
