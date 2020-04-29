@@ -58,11 +58,13 @@ class Player(Drawable):
 
     def move(self, dt):
         self._x += self._vx * dt
-        if self._x < constants.WINDOW_CORNERS[0] or self._x > constants.WINDOW_CORNERS[2]:
+        if self._x < constants.WINDOW_CORNERS[0] + Player.RADIUS \
+                or self._x > constants.WINDOW_CORNERS[2] - Player.RADIUS:
             self._vx = -self._vx
 
         self._y += self._vy * dt
-        if self._y < constants.WINDOW_CORNERS[1] or self._y > constants.WINDOW_CORNERS[3]:
+        if self._y < constants.WINDOW_CORNERS[1] + Player.RADIUS or \
+                self._y > constants.WINDOW_CORNERS[3] - Player.RADIUS:
             self._vy = -self._vy
 
     def draw(self):
