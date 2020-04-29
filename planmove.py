@@ -26,7 +26,7 @@ def main():
     ro, alpha, beta = ro_start, alpha_start, beta_start
 
     # 9 obstacles and 1 target
-    barriers, target_index = generate_barriers(3)
+    barriers, target_index = generate_barriers(9)
 
     # Used for displaying a trail of the robot's positions
     location_history = []
@@ -69,11 +69,11 @@ def main():
         # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
         # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
 
-        target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
-        vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, ball_predicted_positions[0][0], ball_predicted_positions[0][1], theta)
+        target_x, target_y, target_theta = obstacle_avoidance(x, y, vl, vr, theta, ball_predicted_positions, barriers_predicted_positions)
+        vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, ball_predicted_positions[0][0], ball_predicted_positions[0][1], target_theta)
 
         # Actually now move robot based on chosen vl and vr
-        (x, y, theta) = set_new_position(vl, vr, x, y, theta, dt)
+        (x, y, theta) = set_new_position(vl, vr, x, y, target_theta, dt)
 
         barriers = move_barriers(dt, barriers, target_index)
 
