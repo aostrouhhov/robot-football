@@ -94,7 +94,12 @@ class Line:
         return f'{round(self.a, 2)}x+{round(self.b, 2)}y+{round(self.c, 2)}=0'
 
 
-def dump_obstacle_avoidance(robot, ball, obstacles):
+def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
+    return 0, 0
+
+    robot_x, robot_y = robot_pos
+    ball_x, ball_y = ball_pos
+
     hist = {}  # sector to prob
 
     sectors = Sector.generate_sectors()
@@ -106,23 +111,23 @@ def dump_obstacle_avoidance(robot, ball, obstacles):
 
     obstacle_to_sector = {}
     obstacle_to_dist = {}
-    for obstacle in obstacles:
-        x, y = obstacle.get_pos()
-        obstacle_point = Point(x, y, coord_center=Point(robot.x, robot.y))
+    for obstacle_num, obstacle_pos in enumerate(obstacles_pos):
+        x, y = obstacle_pos
+        obstacle_point = Point(x, y, coord_center=Point(robot_x, robot_y))
 
         curr_dist = robot_point.get_dist_to_point(obstacle_point)
         max_dist = max(max_dist, curr_dist)
-        obstacle_to_dist[obstacle] = curr_dist
+        obstacle_to_dist[obstacle_num] = curr_dist
 
         for sector in sectors:
             if sector.contains(obstacle_point):
-                obstacle_to_sector[obstacle] = sector
+                obstacle_to_sector[obstacle_num] = sector
                 break
         else:
             logger.error(f'Unable to identify {obstacle_point} position')
             return  # no success
 
-    ball_point = Point(ball.x, ball.y, coord_center=Point(robot.x, robot.y))
+    ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y))
     ball_sector = None
     free_sectors = []
     for sector in sectors:

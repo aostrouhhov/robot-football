@@ -1,7 +1,7 @@
 import math
 import numpy
 
-import  constants
+import constants
 
 
 def calculate_xi_vector(v, omega, theta):
@@ -14,11 +14,11 @@ def calculate_xi_vector(v, omega, theta):
 
 
 def calculate_phi_vector(ksi, theta):
-    matrix_1 = numpy.array([[1, 0, l], [1, 0, -l], [0, 1, 0]])
+    matrix_1 = numpy.array([[1, 0, constants.l], [1, 0, -constants.l], [0, 1, 0]])
 
     matrix_2 = numpy.array([[math.cos(theta), math.sin(theta), 0], [-math.sin(theta), math.cos(theta), 0], [0, 0, 1]])
 
-    res = 1 / r * numpy.dot(matrix_1, matrix_2)
+    res = 1 / constants.r * numpy.dot(matrix_1, matrix_2)
     phi = numpy.dot(res, ksi)
 
     return phi[0][0], phi[1][0]
@@ -33,8 +33,8 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, theta):
     alpha_new = -theta + math.atan2(dy, dx)
     beta_new = -theta - alpha_new
 
-    v = k_ro * ro_new
-    omega = k_alpha * alpha_new + k_beta * beta_new
+    v = constants.k_ro * ro_new
+    omega = constants.k_alpha * alpha_new + constants.k_beta * beta_new
 
     ksi = calculate_xi_vector(v, omega, theta)
     vl_chosen, vr_chosen = calculate_phi_vector(ksi, theta)
@@ -45,9 +45,9 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, theta):
 def move_to_dot_again(ro, alpha, beta, theta, dt):
     change_rate = numpy.array(
         [
-            [-k_ro * ro * math.cos(alpha)],
-            [k_ro * math.sin(alpha) - k_alpha * alpha - k_beta * beta],
-            [-k_ro * math.sin(alpha)],
+            [-constants.k_ro * ro * math.cos(alpha)],
+            [constants.k_ro * math.sin(alpha) - constants.k_alpha * alpha - constants.k_beta * beta],
+            [-constants.k_ro * math.sin(alpha)],
         ]
     )
 
@@ -55,8 +55,8 @@ def move_to_dot_again(ro, alpha, beta, theta, dt):
     alpha_new = alpha + change_rate[1][0] * dt
     beta_new = beta + change_rate[2][0] * dt
 
-    v = k_ro * ro_new
-    omega = k_alpha * alpha_new + k_beta * beta_new
+    v = constants.k_ro * ro_new
+    omega = constants.k_alpha * alpha_new + constants.k_beta * beta_new
 
     ksi = calculate_xi_vector(v, omega, theta)
     vl_chosen, vr_chosen = calculate_phi_vector(ksi, theta)
@@ -65,11 +65,10 @@ def move_to_dot_again(ro, alpha, beta, theta, dt):
 
 
 def cast_detector_coordinates(coords):
-    assert len(coords.shape) == 2 and coords.shape[1] == 2, f'Expected np.array of shape (N, 2)'
     local_coords = coords.copy()
     # shift
     local_coords[:, 0] = local_coords[:, 0] - constants.WINDOW_WIDTH / 2
     local_coords[:, 1] = constants.WINDOW_HEIGHT / 2 - local_coords[:, 1]
     # scale
-    local_coords = local_coords / k
+    local_coords = local_coords / constants.k
     return local_coords

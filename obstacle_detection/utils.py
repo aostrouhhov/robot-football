@@ -2,8 +2,6 @@ from typing import Dict, List, Tuple
 
 import numpy
 
-from constants import BARRIERRADIUS
-
 
 def extract_closest_points(
     distances: Dict, reference_colors: List[Tuple[Tuple, int]], scale: float

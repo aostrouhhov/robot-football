@@ -1,94 +1,113 @@
 # Made according to this (many thanks):
 # https://www.youtube.com/watch?v=Mdg9ElewwA0&feature=emb_logo
 
-import math
-import time
-
 import cv2
+import copy
+import numpy
+import time
+import math
 
-from barriers_operations import generate_barriers, move_barriers
-from constants import *
+from typing import List, Tuple
+
+import constants
+from constants import Color
+from models import Robot, MovingObstacle, Ball
 from obstacle_avoidance import dump_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
-from obstacle_detection.scale_based import ScaleBasedObstacleDetector
-from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_closest_obstacle_distance, draw_scene, \
-    cast_detector_coordinates
+from utils import cast_detector_coordinates, move_to_dot, move_to_dot_again
 
 obstacle_avoidance = dump_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
-# obstacle_detection = ScaleBasedObstacleDetector('SURF')
+
+
+def _generate_obstacles(cnt=10):
+    barriers = []
+    for i in range(cnt):
+        barrier = MovingObstacle.create_randomized()
+        barriers.append(barrier)
+    return barriers
+
+
+def _draw_edges(screen, predicted_coords: List[Tuple[float, float]], color: Tuple[int, int, int]):
+    for coord in predicted_coords:
+        x = int(constants.u0 + constants.k * coord[0])
+        y = int(constants.v0 - constants.k * coord[1])
+        cv2.circle(screen, (x, y), MovingObstacle.SCREEN_RADIUS, color, 2, lineType=cv2.LINE_AA)
+
+
+def _draw_scene(robot: Robot, ball: Ball, obstacles: List[MovingObstacle],
+                ball_predicted_positions, barriers_predicted_positions):
+
+    screen = numpy.full((*[constants.WINDOW_WIDTH, constants.WINDOW_HEIGHT][::-1], 3), Color.BLACK, dtype=numpy.uint8)
+
+    ball.draw(screen)
+    robot.draw(screen)
+    for obstacle in obstacles:
+        obstacle.draw(screen)
+
+    screen_picture = copy.deepcopy(screen)
+    _draw_edges(screen, ball_predicted_positions, Color.YELLOW)
+    _draw_edges(screen, barriers_predicted_positions, Color.GREEN)
+    return cv2.cvtColor(screen, cv2.COLOR_BGR2RGB), screen_picture
 
 
 def main():
-    # Init states
-    x, y, theta = x_start, y_start, theta_start
-    vl, vr = vl_start, vr_start
-    ro, alpha, beta = ro_start, alpha_start, beta_start
-
-    # 9 obstacles and 1 target
-    barriers, target_index = generate_barriers(10)
-
-    # Used for displaying a trail of the robot's positions
-    location_history = []
-
-    # We will calculate time
     start_time = time.time()
+    dt = 0.1
 
-    target_x = x
-    target_y = y
+    ball = Ball.create_randomized()
+    obstacles = _generate_obstacles(cnt=5)
+    robot = Robot(constants.x_start, constants.y_start, constants.theta_start)
 
-    barriers_predicted_positions = []
+    ro, alpha, beta = constants.ro_start, constants.alpha_start, constants.beta_start
+    target_x = ball.x
+    target_y = ball.y
+
     ball_predicted_positions = []
+    barriers_predicted_positions = []
 
-    # Main loop
     while True:
-        screen, screen_picture = draw_scene(
-            size, location_history, barriers, target_index, x, y, theta,
-            ball_predicted_positions, barriers_predicted_positions
-        )
+        screen, screen_picture = _draw_scene(
+            robot, ball, obstacles, ball_predicted_positions, barriers_predicted_positions)
         cv2.imshow('robot football', screen)
 
-        # For display of trail
-        location_history.append((x, y))
-
-        # Identify a ball and players positions
         ball_predicted_positions, barriers_predicted_positions = obstacle_detection.forward(
-            screen_picture, [(red, 1), (lightblue, 9)]
+            screen_picture, [(Color.RED, 1), (Color.LIGHTBLUE, 9)]
         )
         ball_predicted_positions = cast_detector_coordinates(ball_predicted_positions)
         barriers_predicted_positions = cast_detector_coordinates(barriers_predicted_positions)
 
         # Planning
-        dist_to_target = math.sqrt((x - target_x) ** 2 + (y - target_y) ** 2)
-        if dist_to_target < (ROBOTRADIUS + 0.3):
+        dist_to_target = math.sqrt((robot.x - target_x) ** 2 + (robot.y - target_y) ** 2)
+        if dist_to_target < Robot.RADIUS + 0.3:
             # print("Calling Obstacle Avoidance algorithm")
             # Calculate best target point and call moveToDot
 
-            target_x, target_y = obstacle_avoidance(x, y, ball_predicted_positions, barriers_predicted_positions)
-            vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, x, y, theta)
+            target_x, target_y = obstacle_avoidance((robot.x, robot.y), ball_predicted_positions, barriers_predicted_positions)
+            vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, robot.angle)
         else:
             # print("stillMovingToDot")
-            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, theta)
+            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, robot.angle, dt)
 
         # Actually now move robot based on chosen vl and vr
-        (x, y, theta) = set_new_position(vl, vr, x, y, theta, dt)
+        ball.move(dt)
 
-        barriers = move_barriers(dt, barriers, target_index)
+        robot.set_velocity(vl, vr)
+        robot.move(dt)
 
-        # printBarriers()
+        for player in obstacles:
+            player.move(dt)
 
-        # Check collision
-        dist_to_obstacle = calculate_closest_obstacle_distance(x, y, barriers, target_index)
-        dist_to_target = math.sqrt((x - barriers[target_index][0]) ** 2 + (y - barriers[target_index][1]) ** 2)
-        if dist_to_obstacle < 0.001 or dist_to_target < BARRIERRADIUS + ROBOTRADIUS:
+        dist_to_obstacle = robot.get_closest_dist_to_obstacle(obstacles)
+        dist_to_target = robot.get_dist_to_target(ball)
+        if dist_to_obstacle < 0.001 or dist_to_target < MovingObstacle.RADIUS + Robot.RADIUS:
             if dist_to_obstacle < 0.001:
-                print("Crash!")
-            print("Result:", time.time() - start_time, "sec")
+                print('Crash!')
+            print(f'Result: {time.time() - start_time} sec')
             while cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) == 1:
                 cv2.waitKey(int(dt * 10))
             break
 
-        # Sleeping dt here runs simulation in real-time
         cv2.waitKey(int(dt * 10))
         if cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) < 1:
             break

@@ -2,16 +2,14 @@ import math
 import logging
 import random
 
-import pygame
-from pygame import gfxdraw
+import cv2
 
 import constants
 from constants import Color
 
 
 class Drawable:
-    def __init__(self, surface, x, y):
-        self.surface = surface
+    def __init__(self, x, y):
         self._x = x
         self._y = y
 
@@ -35,7 +33,7 @@ class Drawable:
         return int(constants.WINDOW_WIDTH / 2 + constants.k * coords[0]), \
                int(constants.WINDOW_HEIGHT / 2 - constants.k * coords[1])
 
-    def draw(self):
+    def draw(self, screen):
         pass
 
 
@@ -46,14 +44,14 @@ class MovingObstacle(Drawable):
     SCREEN_RADIUS = int(RADIUS * constants.k)
     COLOR = Color.LIGHTBLUE
 
-    def __init__(self, surface, x, y, vx, vy):
-        super().__init__(surface, x, y)
+    def __init__(self, x, y, vx, vy):
+        super().__init__(x, y)
 
         self._vx = vx
         self._vy = vy
 
     @classmethod
-    def create_randomized(cls, surface):
+    def create_randomized(cls):
         x = random.uniform(constants.WINDOW_CORNERS[0] + cls.RADIUS * 2,
                            constants.WINDOW_CORNERS[2] - cls.RADIUS * 2)
         y = random.uniform(constants.WINDOW_CORNERS[1] + cls.RADIUS * 2,
@@ -61,7 +59,7 @@ class MovingObstacle(Drawable):
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
-        result = MovingObstacle(surface, x, y, vx, vy)
+        result = MovingObstacle(x, y, vx, vy)
         return result
 
     def move(self, dt):
@@ -75,10 +73,9 @@ class MovingObstacle(Drawable):
                 self._y > constants.WINDOW_CORNERS[3] - MovingObstacle.RADIUS:
             self._vy = -self._vy
 
-    def draw(self):
-        screen_x, screen_y = self.get_coords_on_screen(self.get_pos())
-        pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
-        pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
+    def draw(self, screen):
+        pos = self.get_coords_on_screen(self.get_pos())
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
 
 
 class Ball(Drawable):
@@ -88,29 +85,28 @@ class Ball(Drawable):
     COLOR = Color.RED
     SCREEN_RADIUS = int(RADIUS * constants.k)
 
-    def __init__(self, surface, x, y, vx, vy):
-        super().__init__(surface, x, y)
+    def __init__(self, x, y, vx, vy):
+        super().__init__(x, y)
 
         self.vx = vx
         self.vy = vy
 
     @classmethod
-    def create_randomized(cls, surface):
-        x = constants.WINDOW_CORNERS[2]
-        y = constants.WINDOW_CORNERS[3]
+    def create_randomized(cls):
+        x = constants.WINDOW_CORNERS[2]-1
+        y = constants.WINDOW_CORNERS[3]-1
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
-        result = Ball(surface, x, y, vx, vy)
+        result = Ball(x, y, vx, vy)
         return result
 
     def move(self, dt):
         return NotImplemented
 
-    def draw(self):
-        screen_x, screen_y = self.get_coords_on_screen(self.get_pos())
-        pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
-        pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
+    def draw(self, screen):
+        pos = self.get_coords_on_screen(self.get_pos())
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
 
 
 class Wheel(Drawable):
@@ -123,8 +119,8 @@ class Wheel(Drawable):
         LEFT = 'left'
         RIGHT = 'right'
 
-    def __init__(self, surface, x, y, kind, robot):
-        super().__init__(surface, x, y)
+    def __init__(self, x, y, kind, robot):
+        super().__init__(x, y)
 
         self.velocity = 0
 
@@ -150,10 +146,9 @@ class Wheel(Drawable):
     def get_pos(self):
         return self._calc_x(), self._calc_y()
 
-    def draw(self):
-        screen_x, screen_y = self.get_coords_on_screen(self.get_pos())
-        pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
-        pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
+    def draw(self, screen):
+        pos = self.get_coords_on_screen(self.get_pos())
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=2, lineType=cv2.LINE_AA)
 
 
 class Robot(Drawable):
@@ -168,15 +163,15 @@ class Robot(Drawable):
     TRAIL_COLOR = Color.GREY
     TRAIL_SCREEN_RADIUS = 3
 
-    def __init__(self, surface, x, y, angle):
-        super().__init__(surface, x, y)
+    def __init__(self, x, y, angle):
+        super().__init__(x, y)
 
         self._angle = angle
         self.pos_history = []
 
         self.wheels = (
-            Wheel(self.surface, self._x, self._y, Wheel.Kind.LEFT, self),
-            Wheel(self.surface, self._x, self._y, Wheel.Kind.RIGHT, self)
+            Wheel(self._x, self._y, Wheel.Kind.LEFT, self),
+            Wheel(self._x, self._y, Wheel.Kind.RIGHT, self)
         )
 
     @property
@@ -197,9 +192,9 @@ class Robot(Drawable):
         self.wheels[0].velocity = vel_left
         self.wheels[1].velocity = vel_right
 
-    def _draw_wheels(self):
+    def _draw_wheels(self, screen):
         for wheel in self.wheels:
-            wheel.draw()
+            wheel.draw(screen)
 
     def move(self, dt):
         vel_left = self.wheels[0].velocity
@@ -223,17 +218,16 @@ class Robot(Drawable):
 
         self.set_pos(x_new, y_new, angle=theta)
 
-    def draw(self):
+    def draw(self, screen):
         for pos in self.pos_history:
-            screen_x, screen_y = self.get_coords_on_screen(pos)
-            pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.TRAIL_SCREEN_RADIUS, self.TRAIL_COLOR)
-            pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.TRAIL_SCREEN_RADIUS, self.TRAIL_COLOR)
+            pos_on_screen = self.get_coords_on_screen(pos)
+            cv2.circle(screen, pos_on_screen, self.TRAIL_SCREEN_RADIUS,
+                       self.TRAIL_COLOR, thickness=-1, lineType=cv2.LINE_AA)
 
-        self._draw_wheels()
+        self._draw_wheels(screen)
 
-        screen_x, screen_y = self.get_coords_on_screen((self._x, self._y))
-        pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
-        pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
+        pos = self.get_coords_on_screen((self._x, self._y))
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
 
     def get_closest_dist_to_obstacle(self, obstacles):
         closest_dist = 100000.0

@@ -34,6 +34,8 @@ WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacle
 # Set the width and height of the screen (pixels)
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 500
+u0 = WINDOW_WIDTH / 2
+v0 = WINDOW_HEIGHT / 2
 
 
 class Color:
