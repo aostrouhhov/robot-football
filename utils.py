@@ -98,6 +98,19 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, ball_x, ball_y, theta):
             vl_chosen = vl_chosen + vl_chosen * 2
             vr_chosen = vr_chosen + vr_chosen * 2
 
+    if vl_chosen > MAXVELOCITY or vr_chosen > MAXVELOCITY:
+        if vl_chosen > vr_chosen:
+            diff = vr_chosen / vl_chosen
+            vl_chosen = MAXVELOCITY
+            vr_chosen = vl_chosen * diff
+        elif vr_chosen > vl_chosen:
+            diff = vl_chosen / vr_chosen
+            vr_chosen = MAXVELOCITY
+            vl_chosen = vr_chosen * diff
+    else:
+            vl_chosen = MAXVELOCITY
+            vr_chosen = MAXVELOCITY
+
     return vl_chosen, vr_chosen, ro_new, alpha_new, beta_new
 
 

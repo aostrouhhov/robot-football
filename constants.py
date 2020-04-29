@@ -16,7 +16,7 @@ BARRIERRADIUS = 0.14
 ROBOTRADIUS = 0.14
 WHEELBLOB = 0.04
 ROBOTWIDTH = 2 * ROBOTRADIUS
-MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
+MAXVELOCITY = 1  # ms^(-1) max speed of each wheel
 BARRIERVELOCITYRANGE = 0.15
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 
