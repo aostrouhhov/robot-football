@@ -18,13 +18,13 @@ class Sector:
         self.start_deg = deg
         self.end_deg = deg + Sector.DEG_STEP
 
-        self.right_line = self._get_line_by_deg(self.start_deg)
-        self.left_line = self._get_line_by_deg(self.end_deg)
+        self.lowest_line = self._get_line_by_deg(self.start_deg)
+        self.highest_line = self._get_line_by_deg(self.end_deg)
 
         Sector.LAST_SECTOR_ID = self.id
 
     def contains(self, point):
-        return point.is_left_of_line(self.right_line) and not point.is_left_of_line(self.left_line)
+        return point.is_left_of_line(self.lowest_line) and not point.is_left_of_line(self.highest_line)
 
     def get_dist_to_sector(self, sector):
         if abs(self.id - Sector.FIRST_SECTOR_ID) < abs(self.id - Sector.LAST_SECTOR_ID):
@@ -59,7 +59,7 @@ class Sector:
         return Line(a, b, 0)
 
     def __repr__(self):
-        return f'#{self.id} {self.right_line} {self.left_line}'
+        return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
 
 class Point:
@@ -75,7 +75,7 @@ class Point:
         return math.sqrt((self.x - p.x) ** 2 + (self.y - p.y) ** 2)
 
     def is_left_of_line(self, line):
-        return line.get_point_relative_position(self) * 1 < 0
+        return line.get_point_relative_position(self) < 0
 
     def __repr__(self):
         return f'({round(self.x, 2)}, {round(self.y, 2)})'
@@ -87,6 +87,9 @@ class Line:
         self.b = b
         self.c = c
 
+    def direction_vector(self):
+        return self.b * (-1), self.a
+
     def get_point_relative_position(self, point):
         return self.a * point.x + self.b * point.y + self.c
 
@@ -94,11 +97,8 @@ class Line:
         return f'{round(self.a, 2)}x+{round(self.b, 2)}y+{round(self.c, 2)}=0'
 
 
-def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
-    return 0, 0
-
-    robot_x, robot_y = robot_pos
-    ball_x, ball_y = ball_pos
+def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_positions):
+    ball_x, ball_y = ball_positions[0]
 
     hist = {}  # sector to prob
 
@@ -111,7 +111,7 @@ def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
 
     obstacle_to_sector = {}
     obstacle_to_dist = {}
-    for obstacle_num, obstacle_pos in enumerate(obstacles_pos):
+    for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
         x, y = obstacle_pos
         obstacle_point = Point(x, y, coord_center=Point(robot_x, robot_y))
 
@@ -124,8 +124,8 @@ def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
                 obstacle_to_sector[obstacle_num] = sector
                 break
         else:
-            logger.error(f'Unable to identify {obstacle_point} position')
-            return  # no success
+            logger.error(f'Unable to identify obstacle {obstacle_point} position')
+            return 0, 0  # no success
 
     ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y))
     ball_sector = None
@@ -150,6 +150,10 @@ def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
         if sector.contains(ball_point):
             ball_sector = sector
 
+    if not ball_sector:
+        logger.error(f'Unable to identify ball {ball_point} position')
+        return 0, 0
+
     min_diff = INF
     target_sector = None
     for sector in free_sectors:
@@ -158,4 +162,14 @@ def dump_obstacle_avoidance(robot_pos, ball_pos, obstacles_pos):
             min_diff = curr_diff
             target_sector = sector
 
-    logger.warning(f'Should go to {target_sector}')
+    if target_sector == ball_sector:
+        return ball_x, ball_y
+
+    lowest_vec = target_sector.lowest_line.direction_vector()
+    highest_vec = target_sector.highest_line.direction_vector()
+
+    target_vec = (highest_vec[0] + lowest_vec[0]) / 2, (highest_vec[1] + lowest_vec[1] / 2)
+    target_x, target_y = robot_x + target_vec[0] * 100, robot_y + target_vec[1] * 100  # moving far ahead
+
+    logger.warning(f'Should go to {target_sector} according to {target_vec}')
+    return target_x, target_y

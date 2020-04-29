@@ -8,10 +8,8 @@ vl_start = 0.00
 vr_start = 0.00
 
 # A starting pose of robot
-# x_start = -4.0
-# y_start = -2.5
-x_start = 0
-y_start = 0
+x_start = -4.0
+y_start = -2.5
 theta_start = 0
 
 # Constants for movement algorithm
@@ -20,6 +18,8 @@ k_alpha = 5
 k_beta = 1
 l = -0.1
 r = 1
+
+OBSTACLES_COUNT = 10
 
 # Constants
 MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
@@ -44,8 +44,8 @@ class Color:
     BLACK = (20, 20, 40)
     GREY = (70, 70, 70)
     BLUE = (0, 0, 255)
-    RED = (255, 0, 0)
-    GREEN = (0, 255, 0)
+    RED = (255, 100, 0)
+    GREEN = (0, 204, 0)
     LIGHTBLUE = (0, 120, 255)
 
 

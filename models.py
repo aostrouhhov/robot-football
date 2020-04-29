@@ -112,7 +112,7 @@ class Ball(Drawable):
 class Wheel(Drawable):
     RADIUS = 0.04
 
-    COLOR = Color.BLUE
+    COLOR = Color.GREEN
     SCREEN_RADIUS = int(RADIUS * constants.k)
 
     class Kind:
@@ -154,11 +154,12 @@ class Wheel(Drawable):
 class Robot(Drawable):
     RADIUS = 0.14
     WIDTH = 0.28
-    SCREEN_WIDTH = int(WIDTH * constants.k)
+    MAX_VELOCITY = 1
 
     POS_HISTORY_LIMIT = 20
 
     COLOR = Color.WHITE
+    SCREEN_WIDTH = int(WIDTH * constants.k)
     SCREEN_RADIUS = int(RADIUS * constants.k)
     TRAIL_COLOR = Color.GREY
     TRAIL_SCREEN_RADIUS = 3
@@ -200,7 +201,7 @@ class Robot(Drawable):
         vel_left = self.wheels[0].velocity
         vel_right = self.wheels[1].velocity
 
-        logging.warning(f'Moving robot: origin=({self._x}, {self._y}, {self._angle}), vel=({vel_left}, {vel_right})')
+        logging.info(f'Moving robot: origin=({self._x}, {self._y}, {self._angle}), vel=({vel_left}, {vel_right})')
 
         if round(vel_left, 3) == round(vel_right, 3):  # Straight line motion
             x_new = self._x + vel_left * dt * math.cos(self._angle)
