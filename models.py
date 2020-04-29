@@ -41,7 +41,7 @@ class Drawable:
 
 class MovingObstacle(Drawable):
     RADIUS = 0.14
-    VELOCITY_RANGE = 0.0
+    VELOCITY_RANGE = 0.1
 
     SCREEN_RADIUS = int(RADIUS * constants.k)
     COLOR = Color.LIGHTBLUE

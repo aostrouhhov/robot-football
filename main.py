@@ -40,7 +40,7 @@ def main():
     screen = pygame.display.set_mode([constants.WINDOW_WIDTH, constants.WINDOW_HEIGHT])
 
     ball = Ball.create_randomized(screen)
-    obstacles = _generate_obstacles(screen, cnt=1)
+    obstacles = _generate_obstacles(screen, cnt=5)
     robot = Robot(screen, constants.x_start, constants.y_start, constants.theta_start)
 
     dt = 0.1

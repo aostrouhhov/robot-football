@@ -8,8 +8,10 @@ vl_start = 0.00
 vr_start = 0.00
 
 # A starting pose of robot
-x_start = -4.0
-y_start = -2.5
+# x_start = -4.0
+# y_start = -2.5
+x_start = 0
+y_start = 0
 theta_start = 0
 
 # Constants for movement algorithm
