@@ -1,65 +1,10 @@
 import math
 import logging
+from models import MovingObstacle
 
 logger = logging.getLogger('algo')
 
 INF = 10 ** 9
-
-
-class Sector:
-    DEG_STEP = 30
-    COUNT = 360 // DEG_STEP
-
-    FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
-    LAST_SECTOR_ID = None
-
-    def __init__(self, id, deg):
-        self.id = id
-        self.start_deg = deg
-        self.end_deg = deg + Sector.DEG_STEP
-
-        self.lowest_line = self._get_line_by_deg(self.start_deg)
-        self.highest_line = self._get_line_by_deg(self.end_deg)
-
-        Sector.LAST_SECTOR_ID = self.id
-
-    def contains(self, point):
-        return point.is_left_of_line(self.lowest_line) and not point.is_left_of_line(self.highest_line)
-
-    def get_dist_to_sector(self, sector):
-        if abs(self.id - Sector.FIRST_SECTOR_ID) < abs(self.id - Sector.LAST_SECTOR_ID):
-            near_border_id = Sector.FIRST_SECTOR_ID
-            far_border_id = Sector.LAST_SECTOR_ID
-        else:
-            near_border_id = Sector.LAST_SECTOR_ID
-            far_border_id = Sector.LAST_SECTOR_ID
-
-        transitive = abs(self.id - near_border_id) + 1 + abs(far_border_id - sector.id)
-        direct = abs(self.id - sector.id)
-
-        return min(direct, transitive)
-
-    @classmethod
-    def generate_sectors(cls):
-        return [Sector(i + 1, deg=(1 + cls.DEG_STEP * i) % 360) for i in range(cls.COUNT)]
-
-    @staticmethod
-    def _radians(deg):
-        return deg * 3.14 / 180
-
-    def _get_line_by_deg(self, deg):  # kx - y = 0, (-b, a) > 0
-        a = math.tan(self._radians(deg))
-        b = -1
-
-        if 90 < deg < 270:
-            a *= -1
-            b *= -1
-
-        logger.info(f'deg {deg}: ({a > 0}, {b > 0})')
-        return Line(a, b, 0)
-
-    def __repr__(self):
-        return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
 
 class Point:
@@ -97,6 +42,86 @@ class Line:
         return f'{round(self.a, 2)}x+{round(self.b, 2)}y+{round(self.c, 2)}=0'
 
 
+class Square:
+    def __init__(self, x, y, width, coord_center=None):
+        self.center = Point(x, y, coord_center=coord_center)
+
+        self.right_top = Point(x + width / 2, y + width / 2, coord_center=coord_center)
+        self.left_top = Point(x - width / 2, y + width / 2, coord_center=coord_center)
+        self.left_bot = Point(x - width / 2, y - width / 2, coord_center=coord_center)
+        self.right_bot = Point(x + width / 2, y - width / 2, coord_center=coord_center)
+
+        self.points = [self.center, self.right_top, self.left_top, self.left_bot, self.right_bot]
+
+    def get_dist_to_point(self, point):
+        min_dist = INF
+        for p in self.points:
+            min_dist = min(min_dist, p.get_dist_to_point(point))
+        return min_dist
+
+
+class Sector:
+    DEG_STEP = 30
+    COUNT = 360 // DEG_STEP
+
+    FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
+    LAST_SECTOR_ID = None
+
+    def __init__(self, id, deg):
+        self.id = id
+        self.start_deg = deg
+        self.end_deg = deg + Sector.DEG_STEP
+
+        self.lowest_line = self._get_line_by_deg(self.start_deg)
+        self.highest_line = self._get_line_by_deg(self.end_deg)
+
+        Sector.LAST_SECTOR_ID = self.id
+
+    def contains_point(self, point: Point):
+        return point.is_left_of_line(self.lowest_line) and not point.is_left_of_line(self.highest_line)
+
+    def contains_square(self, square: Square):
+        for point in square.points:
+            if self.contains_point(point):
+                return True
+        return False
+
+    def get_dist_to_sector(self, sector):
+        if abs(self.id - Sector.FIRST_SECTOR_ID) < abs(self.id - Sector.LAST_SECTOR_ID):
+            near_border_id = Sector.FIRST_SECTOR_ID
+            far_border_id = Sector.LAST_SECTOR_ID
+        else:
+            near_border_id = Sector.LAST_SECTOR_ID
+            far_border_id = Sector.LAST_SECTOR_ID
+
+        transitive = abs(self.id - near_border_id) + 1 + abs(far_border_id - sector.id)
+        direct = abs(self.id - sector.id)
+
+        return min(direct, transitive)
+
+    @classmethod
+    def generate_sectors(cls):
+        return [Sector(i + 1, deg=(1 + cls.DEG_STEP * i) % 360) for i in range(cls.COUNT)]
+
+    @staticmethod
+    def _radians(deg):
+        return deg * 3.14 / 180
+
+    def _get_line_by_deg(self, deg):  # kx - y = 0, (-b, a) > 0
+        a = math.tan(self._radians(deg))
+        b = -1
+
+        if 90 < deg < 270:
+            a *= -1
+            b *= -1
+
+        logger.info(f'deg {deg}: ({a > 0}, {b > 0})')
+        return Line(a, b, 0)
+
+    def __repr__(self):
+        return f'#{self.id} {self.lowest_line} {self.highest_line}'
+
+
 def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_positions):
     ball_x, ball_y = ball_positions[0]
 
@@ -112,19 +137,19 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
     obstacle_to_sector = {}
     obstacle_to_dist = {}
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
-        x, y = obstacle_pos
-        obstacle_point = Point(x, y, coord_center=Point(robot_x, robot_y))
+        obstacle_x, obstacle_y = obstacle_pos
+        obstacle = Square(obstacle_x, obstacle_y, MovingObstacle.RADIUS * 2, coord_center=Point(robot_x, robot_y))
 
-        curr_dist = robot_point.get_dist_to_point(obstacle_point)
+        curr_dist = obstacle.get_dist_to_point(robot_point)
         max_dist = max(max_dist, curr_dist)
         obstacle_to_dist[obstacle_num] = curr_dist
 
         for sector in sectors:
-            if sector.contains(obstacle_point):
+            if sector.contains_square(obstacle):
                 obstacle_to_sector[obstacle_num] = sector
                 break
         else:
-            logger.error(f'Unable to identify obstacle {obstacle_point} position')
+            logger.error(f'Unable to identify obstacle {obstacle_pos} position')
             return 0, 0  # no success
 
     ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y))
@@ -147,7 +172,7 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
         hist[sector.id] = hist_val
 
         # get dist
-        if sector.contains(ball_point):
+        if sector.contains_point(ball_point):
             ball_sector = sector
 
     if not ball_sector:
