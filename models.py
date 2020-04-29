@@ -15,6 +15,14 @@ class Drawable:
         self._x = x
         self._y = y
 
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
+
     def set_pos(self, x, y):
         self._x = x
         self._y = y
@@ -33,7 +41,7 @@ class Drawable:
 
 class Player(Drawable):
     RADIUS = 0.14
-    VELOCITY_RANGE = 0.1
+    VELOCITY_RANGE = 0.05
 
     SCREEN_RADIUS = int(RADIUS * constants.k)
     COLOR = Color.LIGHTBLUE
@@ -172,14 +180,6 @@ class Robot(Drawable):
         )
 
     @property
-    def x(self):
-        return self._x
-
-    @property
-    def y(self):
-        return self._y
-
-    @property
     def angle(self):
         return self._angle
 
@@ -234,7 +234,6 @@ class Robot(Drawable):
         screen_x, screen_y = self.get_coords_on_screen((self._x, self._y))
         pygame.gfxdraw.aacircle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
         pygame.gfxdraw.filled_circle(self.surface, screen_x, screen_y, self.SCREEN_RADIUS, self.COLOR)
-
 
     def get_closest_dist_to_obstacle(self, players):
         closest_dist = 100000.0

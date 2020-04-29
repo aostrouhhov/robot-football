@@ -3,7 +3,6 @@
 
 import pygame
 import time
-import math
 
 from typing import List
 
@@ -11,7 +10,6 @@ import constants
 from constants import Color
 from models import Robot, Player, Ball
 from obstacle_avoidance import dump_obstacle_avoidance
-from utils import move_to_dot, move_to_dot_again
 
 obstacle_avoidance = dump_obstacle_avoidance
 
@@ -62,20 +60,22 @@ def main():
         if is_finished:
             continue
 
-        ball_predicted_positions = [(0.0, 0.0)]
-        barriers_predicted_positions = [(0.0, 0.0)] * 9
+        # ball_predicted_positions = ball.get_pos()
+        # players_predicted_positions = [player.get_pos() for player in players]
+
+        obstacle_avoidance(robot, ball, players)
 
         # Planning
-        dist_to_target = math.sqrt((robot.x - target_x) ** 2 + (robot.y - target_y) ** 2)
-        if dist_to_target < Robot.RADIUS + 0.3:
-            # print("Calling Obstacle Avoidance algorithm")
-            # Calculate best target point and call moveToDot
-
-            target_x, target_y = obstacle_avoidance(robot.x, robot.y, ball_predicted_positions, barriers_predicted_positions)
-            vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, robot.angle)
-        else:
-            # print("stillMovingToDot")
-            vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, robot.angle, dt)
+        # dist_to_target = math.sqrt((robot.x - target_x) ** 2 + (robot.y - target_y) ** 2)
+        # if dist_to_target < Robot.RADIUS + 0.3:
+        #     # print("Calling Obstacle Avoidance algorithm")
+        #     # Calculate best target point and call moveToDot
+        #
+        #     target_x, target_y = obstacle_avoidance(robot.x, robot.y, ball_predicted_positions, players_predicted_positions)
+        #     vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, robot.angle)
+        # else:
+        #     # print("stillMovingToDot")
+        #     vl, vr, ro, alpha, beta = move_to_dot_again(ro, alpha, beta, robot.angle, dt)
 
         # Save picture of screen for balls detection
         # screen_picture = pygame.surfarray.pixels3d(screen)
@@ -88,8 +88,6 @@ def main():
         # draw_ball_edges(screen, barriers_predicted_positions, barrier_edge_color)
 
         ball.move(dt)
-
-        robot.set_velocity(vl, vr)
         robot.move(dt)
 
         for player in players:
