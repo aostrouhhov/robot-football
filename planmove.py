@@ -18,6 +18,10 @@ obstacle_avoidance = dump_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
 # obstacle_detection = ScaleBasedObstacleDetector('SURF')
 
+# Initialise pygame display screen
+pygame.init()
+screen = pygame.display.set_mode(size)
+
 
 def main():
     # Init states
@@ -27,10 +31,6 @@ def main():
 
     # 9 obstacles and 1 target
     barriers, target_index = generate_barriers(10)
-
-    pygame.init()
-    # Initialise pygame display screen
-    screen = pygame.display.set_mode(size)
 
     # Used for displaying a trail of the robot's positions
     location_history = []
@@ -52,6 +52,7 @@ def main():
         )
         # Update display
         pygame.display.flip()
+        pygame.display.update()
 
         # For display of trail
         location_history.append((x, y))
