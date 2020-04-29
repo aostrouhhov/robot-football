@@ -2,7 +2,8 @@
 import random
 from typing import List, Tuple
 
-import pygame
+import cv2
+import numpy
 
 from constants import PLAYFIELDCORNERS, red, lightblue, k, u0, v0, BARRIERRADIUS, BARRIERVELOCITYRANGE
 
@@ -32,12 +33,9 @@ def move_barriers(dt, barriers, target_index):
 # Draw the barriers (other players and ball) on the screen
 def draw_barriers(screen, barriers, target_index):
     for i, barrier in enumerate(barriers):
-        if i == target_index:
-            b_col = red
-        else:
-            b_col = lightblue
-        pygame.draw.circle(
-            screen, b_col, (int(u0 + k * barrier[0]), int(v0 - k * barrier[1])), int(k * BARRIERRADIUS), 0
+        b_col = red if i == target_index else lightblue
+        cv2.circle(
+            screen, (int(u0 + k * barrier[0]), int(v0 - k * barrier[1])), int(k * BARRIERRADIUS), b_col, -1
         )
 
 
@@ -70,8 +68,8 @@ def generate_barriers(num):
     return barriers, num - 1
 
 
-def draw_ball_edges(surface: pygame.Surface, ball_coords: List[Tuple[float, float]], color: Tuple[int, int, int]):
+def draw_ball_edges(surface: numpy.ndarray, ball_coords: List[Tuple[float, float]], color: Tuple[int, int, int]):
     for ball_coord in ball_coords:
         x = int(u0 + k * ball_coord[0])
         y = int(v0 - k * ball_coord[1])
-        pygame.draw.circle(surface, color, (x, y), int(k * BARRIERRADIUS), 3)
+        cv2.circle(surface, (x, y), int(k * BARRIERRADIUS), color, 3)
