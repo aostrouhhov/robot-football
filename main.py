@@ -12,11 +12,12 @@ import random
 import constants
 from constants import Color
 from models import Robot, MovingObstacle, Ball
-from obstacle_avoidance import dump_obstacle_avoidance
+from obstacle_avoidance import dump_obstacle_avoidance, pfm_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
 from utils import cast_detector_coordinates, move_to_dot
 
-obstacle_avoidance = dump_obstacle_avoidance
+# obstacle_avoidance = dump_obstacle_avoidance
+obstacle_avoidance = pfm_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
 
 
@@ -100,6 +101,7 @@ def main():
         # Actually now move robot based on chosen vl and vr
         ball.move(dt)
 
+        before_move = robot.get_pos()
         robot.set_velocity(vl, vr)
         robot.move(dt)
 
