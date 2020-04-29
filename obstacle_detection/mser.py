@@ -35,10 +35,11 @@ class MSERObstacleDetector:
             else:
                 continue
 
-            mean_color = numpy.mean(image_scaled[relevant_pixels], axis=0)
+            # mean_color = numpy.mean(image_scaled[relevant_pixels], axis=0)
             for color, _ in reference_color:
+                color_difference = numpy.linalg.norm(image_scaled[relevant_pixels] - color, axis=1).mean()
                 distances[color].append((
-                    numpy.linalg.norm(color - mean_color),
+                    color_difference,
                     hull_coords
                 ))
 
