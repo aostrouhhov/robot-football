@@ -40,4 +40,4 @@ class Color:
 k = 100  # pixels per metre for graphics
 
 # Game settings
-OBSTACLES_COUNT = 9
+OBSTACLES_COUNT = 3

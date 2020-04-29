@@ -32,7 +32,7 @@ class Line:
         self.b = b
         self.c = c
 
-    def direction_vector(self):
+    def get_direction_vector(self):
         return self.b * (-1), self.a
 
     def get_point_relative_position(self, point):
@@ -184,23 +184,21 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
             min_diff = curr_diff
             target_sector = sector
 
-    if target_sector == ball_sector:
-        target_vec = ball_x - robot_x, ball_y - robot_y
-    else:
-        lowest_vec = target_sector.lowest_line.direction_vector()
-        highest_vec = target_sector.highest_line.direction_vector()
-
-        target_vec = (highest_vec[0] + lowest_vec[0]) / 2, (highest_vec[1] + lowest_vec[1] / 2)
-
     # Warning: moving far ahead from robot point is imprecise
+    # That's why we are trying to do it step by step
 
-    scale = abs(target_vec[0] / target_vec[1])
-    if scale < 1:
-        target_y = MAX_DIST_TO_GO
-        target_x = target_y * scale
-    else:
-        target_x = MAX_DIST_TO_GO
-        target_y = target_x / scale
+    target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
+    target_vec = target_line.get_direction_vector()
+
+    target_x, target_y = target_vec[0] * MAX_DIST_TO_GO, target_vec[1] * MAX_DIST_TO_GO
+
+    # scale = abs(target_vec[0] / target_vec[1]) :C
+    # if scale < 1:
+    #     target_y = MAX_DIST_TO_GO
+    #     target_x = target_y * scale
+    # else:
+    #     target_x = MAX_DIST_TO_GO
+    #     target_y = target_x / scale
 
     logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
     return target_x + robot_x, target_y + robot_y

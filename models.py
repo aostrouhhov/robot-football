@@ -78,18 +78,8 @@ class MovingObstacle(Drawable):
         cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1)
 
 
-class Ball(Drawable):
-    RADIUS = 0.14
-    VELOCITY_RANGE = 0.01
-
+class Ball(MovingObstacle):
     COLOR = Color.RED
-    SCREEN_RADIUS = int(RADIUS * constants.k)
-
-    def __init__(self, x, y, vx, vy):
-        super().__init__(x, y)
-
-        self.vx = vx
-        self.vy = vy
 
     @classmethod
     def create_randomized(cls):
@@ -98,11 +88,7 @@ class Ball(Drawable):
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
-        result = Ball(x, y, vx, vy)
         return result
-
-    def move(self, dt):
-        return NotImplemented
 
     def draw(self, screen):
         pos = self.get_coords_on_screen(self.get_pos())
@@ -156,7 +142,7 @@ class Robot(Drawable):
     WIDTH = 0.28
     MAX_VELOCITY = 1
 
-    POS_HISTORY_LIMIT = 20
+    POS_HISTORY_LIMIT = 250
 
     COLOR = Color.WHITE
     SCREEN_WIDTH = int(WIDTH * constants.k)
