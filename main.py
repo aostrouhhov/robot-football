@@ -31,7 +31,7 @@ def _draw_edges(screen, predicted_coords: List[Tuple[float, float]], color: Tupl
     for coord in predicted_coords:
         x = int(constants.u0 + constants.k * coord[0])
         y = int(constants.v0 - constants.k * coord[1])
-        cv2.circle(screen, (x, y), MovingObstacle.SCREEN_RADIUS, color, 2, lineType=cv2.LINE_AA)
+        cv2.circle(screen, (x, y), MovingObstacle.SCREEN_RADIUS, color, 2)
 
 
 def _draw_scene(robot: Robot, ball: Ball, obstacles: List[MovingObstacle],

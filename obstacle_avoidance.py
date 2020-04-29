@@ -61,7 +61,7 @@ class Square:
 
 
 class Sector:
-    DEG_STEP = 30
+    DEG_STEP = 10
     COUNT = 360 // DEG_STEP
 
     FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
@@ -105,7 +105,7 @@ class Sector:
 
     @staticmethod
     def _radians(deg):
-        return deg * 3.14 / 180
+        return deg * math.pi / 180
 
     def _get_line_by_deg(self, deg):  # kx - y = 0, (-b, a) > 0
         a = math.tan(self._radians(deg))
@@ -127,14 +127,10 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
 
     hist = {}  # sector to prob
 
-    sectors = Sector.generate_sectors()
-    for sector in sectors:
-        logger.info(sector)
-
     max_dist = 0
     robot_point = Point(0, 0)
 
-    obstacle_to_sector = {}
+    obstacle_to_sectors = {}
     obstacle_to_dist = {}
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
         obstacle_x, obstacle_y = obstacle_pos
@@ -144,21 +140,22 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
         max_dist = max(max_dist, curr_dist)
         obstacle_to_dist[obstacle_num] = curr_dist
 
-        for sector in sectors:
+        for sector in _sectors:
             if sector.contains_square(obstacle):
-                obstacle_to_sector[obstacle_num] = sector
-                break
-        else:
+                sectors = obstacle_to_sectors.setdefault(obstacle_num, set())
+                sectors.add(sector)
+
+        if not obstacle_to_sectors.get(obstacle_num):
             logger.error(f'Unable to identify obstacle {obstacle_pos} position')
             return 0, 0  # no success
 
     ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y))
     ball_sector = None
     free_sectors = []
-    for sector in sectors:
+    for sector in _sectors:
         min_dist = INF
         closest_obstacle = None
-        for obstacle in [obstacle for obstacle, sec in obstacle_to_sector.items() if sec == sector]:
+        for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
             if obstacle_to_dist[obstacle] < min_dist:
                 min_dist = obstacle_to_dist[obstacle]
                 closest_obstacle = obstacle
@@ -188,13 +185,28 @@ def dump_obstacle_avoidance(robot_x, robot_y, ball_positions, obstacles_position
             target_sector = sector
 
     if target_sector == ball_sector:
-        return ball_x, ball_y
+        target_vec = ball_x - robot_x, ball_y - robot_y
+    else:
+        lowest_vec = target_sector.lowest_line.direction_vector()
+        highest_vec = target_sector.highest_line.direction_vector()
 
-    lowest_vec = target_sector.lowest_line.direction_vector()
-    highest_vec = target_sector.highest_line.direction_vector()
+        target_vec = (highest_vec[0] + lowest_vec[0]) / 2, (highest_vec[1] + lowest_vec[1] / 2)
 
-    target_vec = (highest_vec[0] + lowest_vec[0]) / 2, (highest_vec[1] + lowest_vec[1] / 2)
-    target_x, target_y = robot_x + target_vec[0] * 100, robot_y + target_vec[1] * 100  # moving far ahead
+    # Warning: moving far ahead from robot point is imprecise
 
-    logger.warning(f'Should go to {target_sector} according to {target_vec}')
-    return target_x, target_y
+    scale = abs(target_vec[0] / target_vec[1])
+    if scale < 1:
+        target_y = MAX_DIST_TO_GO
+        target_x = target_y * scale
+    else:
+        target_x = MAX_DIST_TO_GO
+        target_y = target_x / scale
+
+    logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
+    return target_x + robot_x, target_y + robot_y
+
+
+MAX_DIST_TO_GO = 5  # todo: research
+
+_sectors = Sector.generate_sectors()
+logger.warning('\n'.join([str(s) for s in _sectors]))

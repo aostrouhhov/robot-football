@@ -75,7 +75,7 @@ class MovingObstacle(Drawable):
 
     def draw(self, screen):
         pos = self.get_coords_on_screen(self.get_pos())
-        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1)
 
 
 class Ball(Drawable):
@@ -106,7 +106,7 @@ class Ball(Drawable):
 
     def draw(self, screen):
         pos = self.get_coords_on_screen(self.get_pos())
-        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1)
 
 
 class Wheel(Drawable):
@@ -148,7 +148,7 @@ class Wheel(Drawable):
 
     def draw(self, screen):
         pos = self.get_coords_on_screen(self.get_pos())
-        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=2, lineType=cv2.LINE_AA)
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=2)
 
 
 class Robot(Drawable):
@@ -223,12 +223,12 @@ class Robot(Drawable):
         for pos in self.pos_history:
             pos_on_screen = self.get_coords_on_screen(pos)
             cv2.circle(screen, pos_on_screen, self.TRAIL_SCREEN_RADIUS,
-                       self.TRAIL_COLOR, thickness=-1, lineType=cv2.LINE_AA)
+                       self.TRAIL_COLOR, thickness=-1)
 
         self._draw_wheels(screen)
 
         pos = self.get_coords_on_screen((self._x, self._y))
-        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1, lineType=cv2.LINE_AA)
+        cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=3)
 
     def get_closest_dist_to_obstacle(self, obstacles):
         closest_dist = 100000.0
