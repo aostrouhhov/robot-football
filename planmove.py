@@ -4,7 +4,7 @@
 import math
 import time
 
-import pygame
+import cv2
 
 from barriers_operations import generate_barriers, move_barriers
 from constants import *
@@ -17,10 +17,6 @@ from utils import move_to_dot, move_to_dot_again, set_new_position, calculate_cl
 obstacle_avoidance = dump_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
 # obstacle_detection = ScaleBasedObstacleDetector('SURF')
-
-# Initialise pygame display screen
-pygame.init()
-screen = pygame.display.set_mode(size)
 
 
 def main():
@@ -46,13 +42,11 @@ def main():
 
     # Main loop
     while True:
-        screen_picture = draw_scene(
-            screen, location_history, barriers, target_index, x, y, theta,
+        screen, screen_picture = draw_scene(
+            size, location_history, barriers, target_index, x, y, theta,
             ball_predicted_positions, barriers_predicted_positions
         )
-        # Update display
-        pygame.display.flip()
-        pygame.display.update()
+        cv2.imshow('robot football', screen)
 
         # For display of trail
         location_history.append((x, y))
@@ -85,25 +79,21 @@ def main():
 
         # Check collision
         dist_to_obstacle = calculate_closest_obstacle_distance(x, y, barriers, target_index)
-        if dist_to_obstacle < 0.001:
-            print("Crash!")
-            print("Result:", time.time() - start_time, "sec")
-            while True:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        return
-
-        # Check if robot has reached target
         dist_to_target = math.sqrt((x - barriers[target_index][0]) ** 2 + (y - barriers[target_index][1]) ** 2)
-        if dist_to_target < (BARRIERRADIUS + ROBOTRADIUS):
+        if dist_to_obstacle < 0.001 or dist_to_target < BARRIERRADIUS + ROBOTRADIUS:
+            if dist_to_obstacle < 0.001:
+                print("Crash!")
             print("Result:", time.time() - start_time, "sec")
-            while True:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        return
+            while cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) == 1:
+                cv2.waitKey(int(dt * 10))
+            break
 
         # Sleeping dt here runs simulation in real-time
-        time.sleep(dt / 50)
+        cv2.waitKey(int(dt * 10))
+        if cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) < 1:
+            break
+
+    cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
