@@ -1,28 +1,16 @@
-# Variables for movement algorithm
-ro_start = 0
-alpha_start = 0
-beta_start = 0
-
-# Starting wheel velocities
-vl_start = 0.00
-vr_start = 0.00
-
 # A starting pose of robot
 x_start = -4.0
 y_start = -2.5
 theta_start = 0
 
 # Constants for movement algorithm
-k_ro = 0.5
-k_alpha = 5
-k_beta = 1
-l = -0.1
+k_ro = 0.4
+k_alpha = 8
+k_beta = -4
+l = 0.1
 r = 1
 
-OBSTACLES_COUNT = 10
-
 # Constants
-MAXVELOCITY = 0.3  # ms^(-1) max speed of each wheel
 WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 
 # Constants for graphics display
@@ -51,3 +39,5 @@ class Color:
 
 k = 100  # pixels per metre for graphics
 
+# Game settings
+OBSTACLES_COUNT = 10

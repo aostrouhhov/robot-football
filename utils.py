@@ -23,7 +23,7 @@ def calculate_phi_vector(ksi, theta):
     res = 1 / constants.r * numpy.dot(matrix_1, matrix_2)
     phi = numpy.dot(res, ksi)
 
-    return phi[0][0], phi[1][0]
+    return phi[1][0], phi[0][0]
 
 
 def move_to_dot(target_x, target_y, robot_x, robot_y, ball_x, ball_y, theta):
