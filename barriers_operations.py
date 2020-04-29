@@ -2,9 +2,7 @@
 import random
 from typing import List, Tuple
 
-import pygame
-from pygame import gfxdraw
-
+import cv2
 from constants import WINDOW_CORNERS, k, u0, v0, BARRIERRADIUS, BARRIER_VELOCITY_RANGE
 
 
@@ -17,4 +15,4 @@ def draw_ball_edges(surface: pygame.Surface, ball_coords: List[Tuple[float, floa
     for ball_coord in ball_coords:
         x = int(u0 + k * ball_coord[0])
         y = int(v0 - k * ball_coord[1])
-        pygame.gfxdraw.aacircle(surface, x, y, int(k * BARRIERRADIUS), color)
+        cv2.circle(surface, (x, y), int(k * BARRIERRADIUS), color, 3, lineType=cv2.LINE_AA)

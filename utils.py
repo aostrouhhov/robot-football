@@ -1,7 +1,7 @@
 import math
 import numpy
 
-from constants import *
+import  constants
 
 
 def calculate_xi_vector(v, omega, theta):
@@ -68,8 +68,8 @@ def cast_detector_coordinates(coords):
     assert len(coords.shape) == 2 and coords.shape[1] == 2, f'Expected np.array of shape (N, 2)'
     local_coords = coords.copy()
     # shift
-    local_coords[:, 0] = local_coords[:, 0] - WINDOW_WIDTH / 2
-    local_coords[:, 1] = local_coords[:, 1] - WINDOW_HEIGHT / 2
+    local_coords[:, 0] = local_coords[:, 0] - constants.WINDOW_WIDTH / 2
+    local_coords[:, 1] = constants.WINDOW_HEIGHT / 2 - local_coords[:, 1]
     # scale
     local_coords = local_coords / k
     return local_coords
