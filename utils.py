@@ -95,8 +95,8 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, ball_x, ball_y, theta):
     if target_x == ball_x and target_y == ball_y:
         dist_to_target = math.sqrt((robot_x - target_x) ** 2 + (robot_y - target_y) ** 2)
         if dist_to_target < (ROBOTRADIUS + 1.5):
-            vl_chosen = vl_chosen + vl_chosen * 2
-            vr_chosen = vr_chosen + vr_chosen * 2
+            vl_chosen = vl_chosen + MAXVELOCITY
+            vr_chosen = vr_chosen + MAXVELOCITY
 
     if vl_chosen > MAXVELOCITY or vr_chosen > MAXVELOCITY:
         if vl_chosen > vr_chosen:
@@ -107,7 +107,7 @@ def move_to_dot(target_x, target_y, robot_x, robot_y, ball_x, ball_y, theta):
             diff = vl_chosen / vr_chosen
             vr_chosen = MAXVELOCITY
             vl_chosen = vr_chosen * diff
-    else:
+        else:
             vl_chosen = MAXVELOCITY
             vr_chosen = MAXVELOCITY
 
