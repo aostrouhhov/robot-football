@@ -88,6 +88,7 @@ class Ball(MovingObstacle):
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
+        result = Ball(x, y, vx, vy)
         return result
 
     def draw(self, screen):
