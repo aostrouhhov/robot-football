@@ -3,15 +3,6 @@ ro_start = 0
 alpha_start = 0
 beta_start = 0
 
-# Starting wheel velocities
-vl_start = 0.00
-vr_start = 0.00
-
-# A starting pose of robot
-x_start = -4.0
-y_start = -2.5
-theta_start = 0
-
 # Constants for movement algorithm
 k_ro = 0.5
 k_alpha = 5
@@ -30,6 +21,16 @@ MAXACCELERATION = 0.5 #ms^(-2) max rate we can change speed of each wheel
 BARRIERVELOCITYRANGE = 0.15
 PLAYFIELDCORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 
+# Starting wheel velocities
+vl_start = 0.00
+vr_start = 0.00
+
+# A starting pose of robot
+x_start = -4.0 + BARRIERRADIUS
+y_start = -2.5 + BARRIERRADIUS
+theta_start = 0
+
+
 # Time step delta to run control and simulation at
 dt = 0.1
 
@@ -47,7 +48,7 @@ size = [WIDTH, HEIGHT]
 u0 = WIDTH / 2
 v0 = HEIGHT / 2
 
-black = (0, 0, 0)
+black = (20, 20, 40)
 lightblue = (0, 120, 255)
 darkblue = (0, 40, 160)
 red = (255, 100, 0)
