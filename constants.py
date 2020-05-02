@@ -1,8 +1,3 @@
-# A starting pose of robot
-x_start = -4.0
-y_start = -2.5
-theta_start = 0
-
 # Constants for movement algorithm
 k_ro = 0.4
 k_alpha = 8
@@ -14,6 +9,11 @@ r = 1
 # Units here are in metres and radians using our standard coordinate frame
 WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
 UNITS_RADIUS = 0.14
+
+# A starting pose of robot
+x_start = -4.0 + UNITS_RADIUS
+y_start = -2.5 + UNITS_RADIUS
+theta_start = 0
 
 # Constants for graphics display
 # Transformation from metric world frame to graphics frame
