@@ -38,8 +38,8 @@ class Drawable:
 
 
 class MovingObstacle(Drawable):
-    RADIUS = 0.14
-    VELOCITY_RANGE = 0.1
+    RADIUS = constants.UNITS_RADIUS
+    VELOCITY_RANGE = constants.OBSTACLE_VELOCITY_RANGE
 
     SCREEN_RADIUS = int(RADIUS * constants.k)
     COLOR = Color.LIGHTBLUE
@@ -139,11 +139,10 @@ class Wheel(Drawable):
 
 
 class Robot(Drawable):
-    RADIUS = 0.14
-    WIDTH = 0.28
-    MAX_VELOCITY = 1
+    RADIUS = constants.UNITS_RADIUS
+    WIDTH = constants.UNITS_RADIUS * 2
 
-    POS_HISTORY_LIMIT = 250
+    POS_HISTORY_LIMIT = 100
 
     COLOR = Color.WHITE
     SCREEN_WIDTH = int(WIDTH * constants.k)

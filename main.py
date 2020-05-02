@@ -13,7 +13,7 @@ from constants import Color
 from models import Robot, MovingObstacle, Ball
 from obstacle_avoidance import dump_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
-from utils import cast_detector_coordinates, move_to_dot, move_to_dot_again
+from utils import cast_detector_coordinates, move_to_dot
 
 obstacle_avoidance = dump_obstacle_avoidance
 obstacle_detection = MSERObstacleDetector()
@@ -83,7 +83,7 @@ def main():
         # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
         # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
 
-        target_x, target_y = obstacle_avoidance(robot.x, robot.y, ball_predicted_positions, barriers_predicted_positions)
+        target_x, target_y = obstacle_avoidance(robot.get_pos(), ball_predicted_positions, barriers_predicted_positions)
         vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, ball_predicted_positions[0][0],
                                               ball_predicted_positions[0][1], robot.angle)
 

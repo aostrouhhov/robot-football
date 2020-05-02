@@ -11,7 +11,9 @@ l = 0.1
 r = 1
 
 # Constants
+# Units here are in metres and radians using our standard coordinate frame
 WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacles
+UNITS_RADIUS = 0.14
 
 # Constants for graphics display
 # Transformation from metric world frame to graphics frame
@@ -40,4 +42,6 @@ class Color:
 k = 100  # pixels per metre for graphics
 
 # Game settings
-OBSTACLES_COUNT = 3
+OBSTACLES_COUNT = 2
+OBSTACLE_VELOCITY_RANGE = 0.1
+ROBOT_MAX_VELOCITY = 1
