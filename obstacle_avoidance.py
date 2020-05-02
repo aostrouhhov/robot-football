@@ -1,9 +1,5 @@
-import math
-from constants import *
+import constants
 
-def dump_obstacle_avoidance(current_x, current_y, target_ball, barriers):
-    # No obstacle avoidance by default, just move to the ball
-    target_x = target_ball[0][0]
-    target_y = target_ball[0][1]
 
-    return target_x, target_y
+def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_predicted_positions):
+    return ball_predicted_positions[0]
