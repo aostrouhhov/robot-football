@@ -165,12 +165,9 @@ class Robot(Drawable):
     def angle(self):
         return self._angle
 
-    def set_pos(self, x, y, angle=None):
+    def set_pos(self, x, y):
         self._x = x
         self._y = y
-
-        if angle is not None:
-            self._angle = angle
 
         self.pos_history.append((x, y))
         self.pos_history = self.pos_history[-Robot.POS_HISTORY_LIMIT:]
@@ -178,6 +175,9 @@ class Robot(Drawable):
     def set_velocity(self, vel_left, vel_right):
         self.wheels[0].velocity = vel_left
         self.wheels[1].velocity = vel_right
+
+    def set_angle(self, new_angle):
+        self._angle = new_angle
 
     def _draw_wheels(self, screen):
         for wheel in self.wheels:
@@ -203,7 +203,8 @@ class Robot(Drawable):
             y_new = self._y - _r * (math.cos(delta_theta + self._angle) - math.cos(self._angle))
             theta = self._angle + delta_theta
 
-        self.set_pos(x_new, y_new, angle=theta)
+        self.set_angle(theta)
+        self.set_pos(x_new, y_new)
 
     def draw(self, screen):
         for pos in self.pos_history:
