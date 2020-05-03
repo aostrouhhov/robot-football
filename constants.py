@@ -1,9 +1,6 @@
 # Constants for movement algorithm
-k_ro = 0.4
-k_alpha = 8
-k_beta = -4
-l = 0.1
-r = 1
+l = 0.7     # distance to wheels
+r = 1       # wheel radius
 
 # Constants
 # Units here are in metres and radians using our standard coordinate frame
@@ -32,16 +29,23 @@ class Color:
     YELLOW = (255, 255, 0)
     WHITE = (255, 255, 255)
     BLACK = (20, 20, 40)
-    GREY = (70, 70, 70)
+    GRAY = (70, 70, 70)
     BLUE = (0, 0, 255)
     RED = (255, 100, 0)
     GREEN = (0, 204, 0)
     LIGHTBLUE = (0, 120, 255)
+    PURPLE = (148, 0, 201)
 
+DRAWABLE_OBS_AVOIDANCE = True
 
 k = 100  # pixels per metre for graphics
 
 # Game settings
-OBSTACLES_COUNT = 2
+dt = 0.1
+SIMULATION_DELAY = 1000
+
+OBSTACLES_COUNT = 5
 OBSTACLE_VELOCITY_RANGE = 0.1
 ROBOT_MAX_VELOCITY = 1
+ROBOT_HUNT_DISTANCE = 0.75
+ROBOT_MAX_HUNT_VELOCITY = 1.25

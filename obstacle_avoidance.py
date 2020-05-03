@@ -1,6 +1,12 @@
 import constants
 import math
 import logging
+import cv2
+import numpy
+
+import utils
+from constants import Color
+from models import Drawable
 
 logger = logging.getLogger('algo')
 
@@ -38,6 +44,23 @@ class Line:
     def get_point_relative_position(self, point):
         return self.a * point.x + self.b * point.y + self.c
 
+    def draw(self, screen, center, color):
+        lvec = self.get_direction_vector()
+        lvec = utils.normalize_np_vector(lvec, 0.1)
+
+        robot_pos = numpy.array([center.x, center.y])
+        points_cnt = DRAWING_MAX_LINE_POINTS
+
+        for n in range(points_cnt):
+            if n == 0:
+                continue
+
+            p = numpy.add(robot_pos, numpy.array([lvec[0] * n, lvec[1] * n]))
+            x, y = Drawable.get_coords_on_screen(p)
+
+            logger.info(f'Drawing line {self}')
+            cv2.circle(screen, (x, y), 1, color, thickness=-1)
+
     def __repr__(self):
         return f'{round(self.a, 2)}x+{round(self.b, 2)}y+{round(self.c, 2)}=0'
 
@@ -74,6 +97,9 @@ class Sector:
 
         self.lowest_line = self._get_line_by_deg(self.start_deg)
         self.highest_line = self._get_line_by_deg(self.end_deg)
+
+        self.is_empty = True
+        self.is_chosen = False
 
         Sector.LAST_SECTOR_ID = self.id
 
@@ -118,6 +144,23 @@ class Sector:
         logger.info(f'deg {deg}: ({a > 0}, {b > 0})')
         return Line(a, b, 0)
 
+    def draw(self, screen, center):
+        if self.is_empty and DRAWING_HIDE_EMPTY:
+            return
+
+        color = Color.GRAY
+        if not self.is_empty:
+            color = Color.RED
+        elif self.is_chosen:
+            color = Color.PURPLE
+
+        if not DRAWING_MIDDLE_LANE:
+            self.lowest_line.draw(screen, center, color)
+            self.highest_line.draw(screen, center, color)
+        else:
+            middle = self._get_line_by_deg((self.start_deg + self.end_deg) / 2)
+            middle.draw(screen, center, color)
+
     def __repr__(self):
         return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
@@ -140,6 +183,10 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
         obstacle = Square(obstacle_x, obstacle_y, constants.UNITS_RADIUS * 2, coord_center=Point(robot_x, robot_y))
 
         curr_dist = obstacle.get_dist_to_point(robot_point)
+        if curr_dist > OBSTACLE_AWARE_DIST:
+            logger.info(f'Skipping obstacle {1+obstacle_num} {obstacle_pos}')
+            continue
+
         max_dist = max(max_dist, curr_dist)
         obstacle_to_dist[obstacle_num] = curr_dist
 
@@ -156,6 +203,9 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
     ball_sector = None
     free_sectors = []
     for sector in _sectors:
+        sector.is_empty = True
+        sector.is_chosen = False
+
         min_dist = INF
         closest_obstacle = None
         for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
@@ -163,11 +213,12 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
                 min_dist = obstacle_to_dist[obstacle]
                 closest_obstacle = obstacle
 
-        if not closest_obstacle:
+        if closest_obstacle is None:
             free_sectors.append(sector)
             hist_val = 0
         else:
             hist_val = round(min_dist / max_dist, 3)
+            sector.is_empty = False
 
         hist[sector.id] = hist_val
 
@@ -181,33 +232,51 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
 
     min_diff = INF
     target_sector = None
+    allowed_min_diff = 2  # FIXME: consider robot and obs size
     for sector in free_sectors:
         curr_diff = abs(sector.id - ball_sector.id)
-        if curr_diff < min_diff:
+        if curr_diff < min_diff and curr_diff >= allowed_min_diff:
             min_diff = curr_diff
             target_sector = sector
 
-    # Warning: moving far ahead from robot point is imprecise
-    # That's why we are trying to do it step by step
+    if not target_sector:
+        return robot_x, robot_y
+
+    target_sector.is_chosen = True
 
     target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
     target_vec = target_line.get_direction_vector()
 
-    target_x, target_y = target_vec[0] * MAX_DIST_TO_GO, target_vec[1] * MAX_DIST_TO_GO
-
-    # scale = abs(target_vec[0] / target_vec[1]) :C
-    # if scale < 1:
-    #     target_y = MAX_DIST_TO_GO
-    #     target_x = target_y * scale
-    # else:
-    #     target_x = MAX_DIST_TO_GO
-    #     target_y = target_x / scale
+    scale = abs(target_vec[0] / target_vec[1])
+    if scale < 1:
+        target_y = MAX_DIST_TO_GO
+        target_x = target_y * scale
+    else:
+        target_x = MAX_DIST_TO_GO
+        target_y = target_x / scale
+    target_x *= utils._get_sign(target_vec[0])
+    target_y *= utils._get_sign(target_vec[1])
 
     logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
     return target_x + robot_x, target_y + robot_y
 
 
-MAX_DIST_TO_GO = 5  # todo: research
+def drawable_dump_obstacle_avoidance(screen, robot, ball_predicted_positions, obstacles_predicted_positions):
+    result = dump_obstacle_avoidance(robot.get_pos(), ball_predicted_positions, obstacles_predicted_positions)
+
+    for sector in _sectors:
+        robot_x, robot_y = robot.get_pos()
+        sector.draw(screen, center=Point(robot_x, robot_y))
+
+    return result
+
+
+MAX_DIST_TO_GO = 0.5
+OBSTACLE_AWARE_DIST = 1.5
+
+DRAWING_HIDE_EMPTY = False
+DRAWING_MAX_LINE_POINTS = 30
+DRAWING_MIDDLE_LANE = True
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))

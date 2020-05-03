@@ -147,8 +147,9 @@ class Robot(Drawable):
     COLOR = Color.WHITE
     SCREEN_WIDTH = int(WIDTH * constants.k)
     SCREEN_RADIUS = int(RADIUS * constants.k)
-    TRAIL_COLOR = Color.GREY
+    TRAIL_COLOR = Color.GRAY
     TRAIL_SCREEN_RADIUS = 3
+    DIRECTION_COLOR = Color.GREEN
 
     def __init__(self, x, y, angle):
         super().__init__(x, y)
@@ -179,10 +180,6 @@ class Robot(Drawable):
     def set_angle(self, new_angle):
         self._angle = new_angle
 
-    def _draw_wheels(self, screen):
-        for wheel in self.wheels:
-            wheel.draw(screen)
-
     def move(self, dt):
         vel_left = self.wheels[0].velocity
         vel_right = self.wheels[1].velocity
@@ -206,6 +203,19 @@ class Robot(Drawable):
         self.set_angle(theta)
         self.set_pos(x_new, y_new)
 
+    def _draw_direction(self, screen):
+        start_on_screen = self.get_coords_on_screen(self.get_pos())
+
+        end_x = self.x + self.RADIUS * math.cos(self.angle)
+        end_y = self.y + self.RADIUS * math.sin(self.angle)
+        end_on_screen = self.get_coords_on_screen((end_x, end_y))
+
+        cv2.line(screen, start_on_screen, end_on_screen, self.DIRECTION_COLOR, thickness=1)
+
+    def _draw_wheels(self, screen):
+        for wheel in self.wheels:
+            wheel.draw(screen)
+
     def draw(self, screen):
         for pos in self.pos_history:
             pos_on_screen = self.get_coords_on_screen(pos)
@@ -216,6 +226,8 @@ class Robot(Drawable):
 
         pos = self.get_coords_on_screen((self._x, self._y))
         cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=3)
+
+        self._draw_direction(screen)
 
     def get_closest_dist_to_obstacle(self, obstacles):
         closest_dist = 100000.0
