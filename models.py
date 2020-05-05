@@ -234,6 +234,20 @@ class Robot(Drawable):
 
         return closest_dist
 
+    def goal_angle(self, target):
+        # target - ball в main функции
+
+        target_x, target_y = target.get_pos()
+        # angle goalAngle = Math.atan2(goalPos, robotPos)-robot.GetAngle(); - формула из книги
+        goal_angle = math.atan2(target_y - self._y, target_x - self._x) - self.angle
+        # все углы у нас от -pi до pi, проверка, что не перескочили это ограничение
+        if goal_angle < (-math.pi):
+            goal_angle += 2 * math.pi
+        elif goal_angle > math.pi:
+            goal_angle -= 2 * math.pi
+        # угол до цели/мячика в координатах робота
+        return goal_angle
+
     def get_dist_to_target(self, target):
         target_x, target_y = target.get_pos()
         return math.sqrt((self._x - target_x) ** 2 + (self._y - target_y) ** 2)

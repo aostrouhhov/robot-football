@@ -98,6 +98,11 @@ def main():
 
         dist_to_obstacle = robot.get_closest_dist_to_obstacle(obstacles)
         dist_to_target = robot.get_dist_to_target(ball)
+
+        # как использовать goal_angle:
+        # goal_angle = robot.goal_angle(ball)
+        # print("Goal angle: " + str(goal_angle) + "\n")
+
         if dist_to_obstacle < 0.001 or dist_to_target < MovingObstacle.RADIUS + Robot.RADIUS:
             if dist_to_obstacle < 0.001:
                 print('Crash!')
