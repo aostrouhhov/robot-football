@@ -83,7 +83,7 @@ def main():
         # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
         # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
 
-        target_x, target_y = obstacle_avoidance(robot.get_pos(), ball_predicted_positions, barriers_predicted_positions)
+        target_x, target_y = obstacle_avoidance(robot, ball, obstacles, ball_predicted_positions, barriers_predicted_positions)
         vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, ball_predicted_positions[0][0],
                                               ball_predicted_positions[0][1], robot.angle)
 
@@ -99,11 +99,11 @@ def main():
         dist_to_obstacle = robot.get_closest_dist_to_obstacle(obstacles)
         dist_to_target = robot.get_dist_to_target(ball)
 
-        # как использовать goal_angle:
+        # # как использовать goal_angle:
         # goal_angle = robot.goal_angle(ball)
         # print("Goal angle: " + str(goal_angle) + "\n")
-
-        # используем min_range:
+        #
+        # # используем min_range:
         # angle_from_goal = goal_angle - 3.14159265359 / 4.0
         # if angle_from_goal < -3.14159265359:
         #     angle_from_goal += 2 * 3.14159265359
