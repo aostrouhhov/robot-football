@@ -30,6 +30,11 @@ class Point:
 
     def __repr__(self):
         return f'({round(self.x, 2)}, {round(self.y, 2)})'
+    
+    def rotate(self,angle):
+        x_ = self.x * math.cos(Sector._radians(angle)) + self.y * math.sin(Sector._radians(angle))
+        y_ = -self.x * math.sin(Sector._radians(angle)) + self.y * math.cos(Sector._radians(angle))
+        return Point(x_,y_)
 
 
 class Line:
@@ -69,6 +74,7 @@ class Square:
     def __init__(self, x, y, width, coord_center=None):
         self.center = Point(x, y, coord_center=coord_center)
 
+        self.width = width
         self.right_top = Point(x + width / 2, y + width / 2, coord_center=coord_center)
         self.left_top = Point(x - width / 2, y + width / 2, coord_center=coord_center)
         self.left_bot = Point(x - width / 2, y - width / 2, coord_center=coord_center)
@@ -164,24 +170,50 @@ class Sector:
     def __repr__(self):
         return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
+def get_histogram_value(robot : Point, obstacle : Square, sector : Sector):
+    # 1 meter = 100 pixels, so iterate through points with @step
+    step = 0.01
+    top_left = obstacle.left_top
+    pixels = []
 
-def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_predicted_positions):
+    point = Point(round(top_left.x,2),round(top_left.y,2))
+
+    width = int(obstacle.width * 100)
+    
+    for i in range(width):
+        for j in range(width):
+            pixels.append(Point(point.x + step * i, point.y - step * j))
+    
+    res = 0
+    for pixel in pixels:
+        if sector.contains_point(pixel):
+            dist = pixel.get_dist_to_point(robot)
+            res = res + dist
+    return res
+
+
+def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_positions, obstacles_predicted_positions):
     robot_x, robot_y = robot_position
+    rangle = robot_angle
     ball_x, ball_y = ball_predicted_positions[0]
     obstacles_positions = obstacles_predicted_positions
     #
 
     hist = {}  # sector to prob
 
+    # maximal distance to obstacle    
     max_dist = 0
     robot_point = Point(0, 0)
 
     obstacle_to_sectors = {}
     obstacle_to_dist = {}
+    sector_to_obstacles = {}
+    # obstacle_squares = []
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
         obstacle_x, obstacle_y = obstacle_pos
-        obstacle = Square(obstacle_x, obstacle_y, constants.UNITS_RADIUS * 2, coord_center=Point(robot_x, robot_y))
-
+        obstacle_point = Point(obstacle_x, obstacle_y).rotate(rangle)
+        obstacle = Square(obstacle_point.x, obstacle_point.y, constants.UNITS_RADIUS * 2, coord_center=Point(robot_x, robot_y).rotate(rangle))
+        
         curr_dist = obstacle.get_dist_to_point(robot_point)
         if curr_dist > OBSTACLE_AWARE_DIST:
             logger.info(f'Skipping obstacle {1+obstacle_num} {obstacle_pos}')
@@ -194,30 +226,38 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
             if sector.contains_square(obstacle):
                 sectors = obstacle_to_sectors.setdefault(obstacle_num, set())
                 sectors.add(sector)
+                obstacles = sector_to_obstacles.setdefault(sector.id,set())
+                obstacles.add(obstacle) 
 
         if not obstacle_to_sectors.get(obstacle_num):
             logger.error(f'Unable to identify obstacle {obstacle_pos} position')
             return 0, 0  # no success
 
-    ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y))
+    ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y)).rotate(rangle)
     ball_sector = None
     free_sectors = []
+    # for each sector find closest obstacle
     for sector in _sectors:
         sector.is_empty = True
         sector.is_chosen = False
 
         min_dist = INF
         closest_obstacle = None
+        hist_val = 0
         for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
             if obstacle_to_dist[obstacle] < min_dist:
                 min_dist = obstacle_to_dist[obstacle]
                 closest_obstacle = obstacle
 
+
         if closest_obstacle is None:
             free_sectors.append(sector)
             hist_val = 0
         else:
-            hist_val = round(min_dist / max_dist, 3)
+        #     # hist_val = round(min_dist / max_dist, 3)
+            for obstacle in sector_to_obstacles[sector.id]:
+                hist_val = hist_val + get_histogram_value(robot_point,obstacle,sector)
+        #     hist_val = get_histogram_value(robot_point,obstacle,sector)
             sector.is_empty = False
 
         hist[sector.id] = hist_val
@@ -225,6 +265,8 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
         # get dist
         if sector.contains_point(ball_point):
             ball_sector = sector
+    
+    logger.warning(f'historgam {hist}')
 
     if not ball_sector:
         logger.error(f'Unable to identify ball {ball_point} position')
@@ -232,7 +274,7 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
 
     min_diff = INF
     target_sector = None
-    allowed_min_diff = 2  # FIXME: consider robot and obs size
+    allowed_min_diff = 0  # FIXME: consider robot and obs size
     for sector in free_sectors:
         curr_diff = abs(sector.id - ball_sector.id)
         if curr_diff < min_diff and curr_diff >= allowed_min_diff:
@@ -262,7 +304,7 @@ def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_
 
 
 def drawable_dump_obstacle_avoidance(screen, robot, ball_predicted_positions, obstacles_predicted_positions):
-    result = dump_obstacle_avoidance(robot.get_pos(), ball_predicted_positions, obstacles_predicted_positions)
+    result = dump_obstacle_avoidance(robot.get_pos(), robot.angle, ball_predicted_positions, obstacles_predicted_positions)
 
     for sector in _sectors:
         robot_x, robot_y = robot.get_pos()
