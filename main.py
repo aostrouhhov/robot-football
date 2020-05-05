@@ -103,6 +103,23 @@ def main():
         # goal_angle = robot.goal_angle(ball)
         # print("Goal angle: " + str(goal_angle) + "\n")
 
+        # используем min_range:
+        # angle_from_goal = goal_angle - 3.14159265359 / 4.0
+        # if angle_from_goal < -3.14159265359:
+        #     angle_from_goal += 2 * 3.14159265359
+        # angle_to_goal = goal_angle + 3.14159265359 / 4.0
+        # if angle_to_goal > 3.14159265359:
+        #     angle_to_goal -= 2 * 3.14159265359
+        # closets_from_goal = robot.min_range(obstacles, angle_from_goal, angle_to_goal)
+        # print("From: " + str(angle_from_goal) + ", to: " + str(angle_to_goal) + "\n")
+        # print("Closest obstacle from goal +- pi/4: " + str(closets_from_goal) + "\n")
+        # closest_front = robot.min_range(obstacles, -3.14159265359 / 4, 3.14159265359 / 4)
+        # print("Closest in front: " + str(closest_front) + "\n")
+        # closest_left = robot.min_range(obstacles, 0, 3.14159265359 / 2)
+        # print("Closest on left: " + str(closest_left) + "\n")
+        # closest_right = robot.min_range(obstacles, -3.14159265359 / 2, 0)
+        # print("Closest on right: " + str(closest_right) + "\n")
+
         if dist_to_obstacle < 0.001 or dist_to_target < MovingObstacle.RADIUS + Robot.RADIUS:
             if dist_to_obstacle < 0.001:
                 print('Crash!')

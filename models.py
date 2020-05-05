@@ -234,6 +234,48 @@ class Robot(Drawable):
 
         return closest_dist
 
+    def min_range(self, obstacles, angle_from, angle_to):
+        closest_dist = 100000.0
+        # closest_angle = 0
+        for i, obstacle in enumerate(obstacles):
+            o_x, o_y = obstacle.get_pos()
+            dx = o_x - self._x
+            dy = o_y - self._y
+
+            # угол препятствия относительно угла робота
+            obstacle_angle = math.atan2(dy, dx) - self.angle
+
+            # все углы у нас от -pi до pi, проверка, что не перескочили это ограничение
+            if obstacle_angle < (-math.pi):
+                obstacle_angle += 2 * math.pi
+            elif obstacle_angle > math.pi:
+                obstacle_angle -= 2 * math.pi
+
+            # print(obstacle_angle)
+
+            # затруднительный случай angle_from = goalAngle - pi/4 и angle_to = goalAngle + pi/4
+            # пусть эти углы корректны (то есть находятся в интервале от -pi до pi, что надо проверить перед вызовом)
+            # тогда если цель где-то сзади, то "конус" получится с развёрнутым углом
+            # значит, нам надо смотреть, чтобы наоборот, объект был вне этого "развернутого" конуса
+            if abs(angle_to - angle_from) > math.pi:
+                if not (angle_to <= obstacle_angle <= angle_from):
+                    # то есть препятствие попадает в наш узкий конус, считаем расстояние
+                    d = math.sqrt(dx ** 2 + dy ** 2)
+                    dist = d - MovingObstacle.RADIUS - Robot.RADIUS
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        # closest_angle = obstacle_angle
+            else:
+                # угол не развёрнутый, считаем нормально
+                if angle_from <= obstacle_angle <= angle_to:
+                    d = math.sqrt(dx ** 2 + dy ** 2)
+                    dist = d - MovingObstacle.RADIUS - Robot.RADIUS
+                    if dist < closest_dist:
+                        closest_dist = dist
+                        # closest_angle = obstacle_angle
+        # print("Closest obstacle angle: " + str(closest_angle))
+        return closest_dist
+
     def goal_angle(self, target):
         # target - ball в main функции
 

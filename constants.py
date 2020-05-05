@@ -14,6 +14,7 @@ UNITS_RADIUS = 0.14
 x_start = -4.0 + UNITS_RADIUS
 # x_start = 4.0 - UNITS_RADIUS
 y_start = -2.5 + UNITS_RADIUS
+# y_start = 2.5 - UNITS_RADIUS
 theta_start = 0
 # theta_start = -3.14159265359
 
