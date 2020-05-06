@@ -179,7 +179,7 @@ def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
 
     point = Point(round(top_left.x, 2), round(top_left.y, 2))
 
-    width = int(obstacle.width * 100)
+    width = int(obstacle.width * 10)
 
     for i in range(width):
         for j in range(width):
@@ -284,8 +284,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
         logger.error(f'Unable to identify ball {ball_point} position')
         return 0, 0
 
-    min_diff = INF
     target_sector = None
+    min_diff = INF
     allowed_min_diff = 0  # FIXME: consider robot and obs size
 
     for sector in free_sectors:
@@ -294,13 +294,10 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
             min_diff = curr_diff
             target_sector = sector
 
-    if not target_sector:
+    # TODO
+    is_path_exist, target_vec = choose_target_vector_naive(free_sectors, ball_sector)
+    if not is_path_exist:
         return robot_x, robot_y
-
-    target_sector.is_chosen = True
-
-    target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
-    target_vec = target_line.get_direction_vector()
 
     scale = abs(target_vec[0] / target_vec[1])
     if scale < 1:
@@ -337,7 +334,7 @@ DRAWING_MIDDLE_LANE = True
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
 
-OBSTACLE_COEF_DRIVE_TO_ROBOT = 0.5
+OBSTACLE_COEF_DRIVE_TO_ROBOT = 1
 
 
 #  Эвриситка раз:  Если робот движется на нас -> хреновое направление
@@ -361,3 +358,24 @@ def get_coeff_direction(vx, vy, sector: Sector) -> float:
 #
 # def get_coeff_farthest(dist:float) -> float:
 #     if dist >
+
+# return target line
+def choose_target_vector_naive(free_sectors,ball_sector):
+    target_sector = None
+    min_diff = INF
+    allowed_min_diff = 0  # FIXME: consider robot and obs size
+
+    for sector in free_sectors:
+        curr_diff = abs(sector.id - ball_sector.id)
+        if curr_diff < min_diff and curr_diff >= allowed_min_diff:
+            min_diff = curr_diff
+            target_sector = sector
+
+    if not target_sector:
+        return False, None
+
+    target_sector.is_chosen = True
+
+    target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
+    target_vec = target_line.get_direction_vector()
+    return True, target_vec
