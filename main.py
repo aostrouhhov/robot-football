@@ -64,10 +64,17 @@ def main():
     ball_predicted_positions = []
     barriers_predicted_positions = []
 
+    fps = 30
+    width = constants.WINDOW_WIDTH
+    height = constants.WINDOW_HEIGHT
+
+    out = cv2.VideoWriter('result.mov', cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
+
     while True:
         screen, screen_picture = _draw_scene(
             robot, ball, obstacles, ball_predicted_positions, barriers_predicted_positions)
         cv2.imshow('robot football', screen)
+        out.write(screen)
 
         ball_predicted_positions, barriers_predicted_positions = obstacle_detection.forward(
             screen_picture, [(Color.RED, 1), (Color.LIGHTBLUE, 9)]
@@ -106,6 +113,7 @@ def main():
                 print('Crash!')
             print(f'Result: {time.time() - start_time} sec')
             while cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) == 1:
+                out.release()
                 cv2.waitKey(int(dt * 10))
             break
 
@@ -113,6 +121,7 @@ def main():
         if cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) < 1:
             break
 
+    out.release()
     cv2.destroyAllWindows()
 
 
