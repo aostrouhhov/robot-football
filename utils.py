@@ -39,6 +39,8 @@ def move_to_dot(robot, ball, target):
 
     v = constants.ROBOT_MAX_VELOCITY
     dist = numpy.linalg.norm(target_vec)
+    if dist <= 0:
+        return 0, 0
 
     omega = robot_target_angle / (dist / v)
 
