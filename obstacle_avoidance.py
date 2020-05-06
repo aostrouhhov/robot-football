@@ -170,6 +170,17 @@ class Sector:
     def __repr__(self):
         return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
+class Valley:
+    def __init__(self,sectors):
+        self.sectors = sectors
+        self.width = VALLEY
+        self.target_sector = sectors[(self.width//2) + 1]
+    
+    def get_target_deg(self):
+        return (self.target_sector.end_deg + self.target_sector.start_deg) / 2
+    def get_median(self):
+        
+        return self.target_sector._get_line_by_deg((self.target_sector.start_deg + self.target_sector.end_deg) / 2)
 
 def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
     # 1 meter = 100 pixels, so iterate through points with @step
@@ -284,15 +295,36 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
         logger.error(f'Unable to identify ball {ball_point} position')
         return 0, 0
 
-    min_diff = INF
-    target_sector = None
-    allowed_min_diff = 0  # FIXME: consider robot and obs size
+    valleys = []
+    ball_target_deg = (ball_sector.start_deg + ball_sector.end_deg) / 2
 
-    for sector in free_sectors:
-        curr_diff = abs(sector.id - ball_sector.id)
-        if curr_diff < min_diff and curr_diff >= allowed_min_diff:
-            min_diff = curr_diff
-            target_sector = sector
+    print(hist.keys())
+
+    for k in range(Sector.COUNT):
+        valley_sectors = [((k + i) % Sector.COUNT + 1,hist[(k + i) % Sector.COUNT + 1]) for i in range(VALLEY)]
+        if all(map(lambda x : x[1] < TRESHOLD,valley_sectors)):
+            valley_sectors = list(map(lambda x : x[0], valley_sectors))
+            valleys.append(Valley([sector for sector in _sectors if sector.id in valley_sectors]))
+
+    # choose closest valley
+    target_sector = None
+    min_diff = INF
+    for valley in valleys:
+        diff = abs(valley.get_target_deg() - ball_target_deg)
+        if diff >= 180:
+            diff = abs(valley.get_target_deg() - ball_target_deg - 360)
+        if diff < min_diff:
+            min_diff = diff
+            target_sector = valley.target_sector
+
+    # target_sector = None
+    # allowed_min_diff = 0  # FIXME: consider robot and obs size
+
+    # for sector in free_sectors:
+    #     curr_diff = abs(sector.id - ball_sector.id)
+    #     if curr_diff < min_diff and curr_diff >= allowed_min_diff:
+    #         min_diff = curr_diff
+    #         target_sector = sector
 
     if not target_sector:
         return robot_x, robot_y
@@ -333,6 +365,9 @@ OBSTACLE_AWARE_DIST = 1.5
 DRAWING_HIDE_EMPTY = False
 DRAWING_MAX_LINE_POINTS = 30
 DRAWING_MIDDLE_LANE = True
+
+TRESHOLD = 0.003
+VALLEY = 5
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
