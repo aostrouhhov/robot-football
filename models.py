@@ -107,6 +107,7 @@ class ObstacleRegistry(Drawable):
         self.speeds = np.zeros(cur_positions.shape)
         for prev_ind, (cur_ind, dist) in prev_to_cur.items():
             self.speeds[cur_ind] = cur_positions[cur_ind] - self.previous_positions[prev_ind]
+        self.speeds *= np.random.normal(1., 0.2, self.speeds.shape)
 
         self.previous_positions = cur_positions
 

@@ -135,7 +135,7 @@ def _main():
     obstacles = _generate_obstacles(cnt=constants.OBSTACLES_COUNT)
     robot = Robot(constants.x_start, constants.y_start, constants.theta_start)
     run_simulation(robot, ball, obstacles,
-                   enable_detection=True,
+                   enable_detection=False,
                    drawable_obs_avoidance=constants.DRAWABLE_OBS_AVOIDANCE)
 
 

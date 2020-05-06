@@ -52,5 +52,5 @@ ROBOT_HUNT_DISTANCE = 0.75
 ROBOT_MAX_HUNT_VELOCITY = 1.25
 
 # Fix random seed to reproduce results. Set None if no fixation is needed
-RANDOM_SEED = 239
+RANDOM_SEED = 240
 
