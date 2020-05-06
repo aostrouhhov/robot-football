@@ -6,6 +6,7 @@ import cv2
 
 import constants
 from constants import Color
+import numpy as np
 
 
 class Drawable:
@@ -76,6 +77,51 @@ class MovingObstacle(Drawable):
     def draw(self, screen):
         pos = self.get_coords_on_screen(self.get_pos())
         cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=-1)
+
+
+class ObstacleRegistry(Drawable):
+    def __init__(self,):
+        super().__init__(0, 0)
+
+        self.previous_positions = None
+        self.speeds = None
+
+    def register_positions(self, obs_positions):
+        cur_positions = np.array(obs_positions)
+        print('obs_shape', cur_positions.shape)
+        if self.previous_positions is None:
+            self.speeds = np.zeros_like(cur_positions)
+            self.previous_positions = cur_positions
+            return
+
+        prev_to_cur = {}
+        for cur_ind, pt in enumerate(cur_positions):
+            best_ind = None
+            dists = np.sqrt(np.sum((pt - self.previous_positions) ** 2, axis=1))
+            for prev_ind in np.argsort(dists)[::-1]:
+                if (prev_ind not in prev_to_cur) or (prev_to_cur[prev_ind][1] < dists[prev_ind]):
+                    best_ind = prev_ind
+            if best_ind and dists[best_ind] <= constants.OBSTACLE_VELOCITY_RANGE * 5:
+                prev_to_cur[best_ind] = (cur_ind, dists[best_ind])
+
+        self.speeds = np.zeros(cur_positions.shape)
+        for prev_ind, (cur_ind, dist) in prev_to_cur.items():
+            self.speeds[cur_ind] = cur_positions[cur_ind] - self.previous_positions[prev_ind]
+
+        self.previous_positions = cur_positions
+
+    def get_obs_pos(self):
+        return self.previous_positions
+
+    def get_obs_speeds(self):
+        return self.speeds
+
+    def get_next_obs_pos(self, steps_ahead=1):
+        return self.previous_positions + self.speeds * steps_ahead
+
+    def draw(self, screen):
+        for pt1, pt2 in zip(self.get_obs_pos(), self.get_next_obs_pos(10)):
+            cv2.line(screen, self.get_coords_on_screen(pt1), self.get_coords_on_screen(pt2), (127, 255, 127), 2)
 
 
 class Ball(MovingObstacle):

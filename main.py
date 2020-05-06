@@ -11,7 +11,7 @@ from typing import List, Tuple
 import random
 import constants
 from constants import Color
-from models import Robot, MovingObstacle, Ball
+from models import Robot, MovingObstacle, Ball, ObstacleRegistry
 from obstacle_avoidance import dump_obstacle_avoidance, drawable_dump_obstacle_avoidance
 from obstacle_detection.mser import MSERObstacleDetector
 from utils import cast_detector_coordinates, move_to_dot
@@ -57,6 +57,7 @@ def _draw_scene(robot: Robot, ball: Ball, obstacles: List[MovingObstacle],
 def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection=True, drawable_obs_avoidance=False):
     start_time = time.time()
     dt = constants.dt
+    registry = ObstacleRegistry()
 
     ball_predicted_positions = []
     barriers_predicted_positions = []
@@ -77,6 +78,8 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
             ball_predicted_positions = [ball.get_pos()]
             barriers_predicted_positions = [barrier.get_pos() for barrier in obstacles]
 
+        registry.register_positions(barriers_predicted_positions)
+        registry.draw(screen)
         # Planning
         #
         # Call obstacle avoidance algorithm and move to returned dot.
