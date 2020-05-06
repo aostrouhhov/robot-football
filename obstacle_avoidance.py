@@ -90,7 +90,7 @@ class Square:
 
 
 class Sector:
-    DEG_STEP = 5
+    DEG_STEP = 9
     COUNT = 360 // DEG_STEP
 
     FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
@@ -184,7 +184,7 @@ class Valley:
 
 def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
     # 1 meter = 100 pixels, so iterate through points with @step
-    step = 0.01
+    step = 0.04
     top_left = obstacle.left_top
     pixels = []
 
@@ -212,7 +212,7 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     robot_x, robot_y = robot_position
     rangle = robot_angle
     ball_x, ball_y = ball_predicted_positions[0]
-    obstacles_positions = [(obstacle.x, obstacle.y, obstacle._vx, obstacle._vy) for obstacle in
+    obstacles_positions = [(obstacle[0], obstacle[1], 1, 1) for obstacle in
                            obstacles_predicted_positions]
 
     hist = {}  # sector to prob
@@ -298,7 +298,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     valleys = []
     ball_target_deg = (ball_sector.start_deg + ball_sector.end_deg) / 2
 
-    print(hist.keys())
+    logger.warning(f"maximum {max(hist.values())}")
+
 
     for k in range(Sector.COUNT):
         valley_sectors = [((k + i) % Sector.COUNT + 1,hist[(k + i) % Sector.COUNT + 1]) for i in range(VALLEY)]
@@ -360,14 +361,14 @@ def drawable_dump_obstacle_avoidance(screen, robot, ball_predicted_positions, ob
 
 
 MAX_DIST_TO_GO = 0.5
-OBSTACLE_AWARE_DIST = 1.5
+OBSTACLE_AWARE_DIST = 1.25
 
 DRAWING_HIDE_EMPTY = False
 DRAWING_MAX_LINE_POINTS = 30
 DRAWING_MIDDLE_LANE = True
 
-TRESHOLD = 0.003
-VALLEY = 5
+TRESHOLD = 0.005
+VALLEY = 3
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
