@@ -61,4 +61,4 @@ barrier_edge_color = (0, 255, 0)
 k = 100  # pixels per metre for graphics
 
 # Set random seed to fix results. Set None if no fixation is needed
-RANDOM_SEED = 239
+RANDOM_SEED = None

@@ -17,13 +17,13 @@ def dwa(vl, vr, x, y, theta, ball, barriers):
     best_benefit = -100000
     best_vl, best_vr = vl, vr
     FORWARDWEIGHT = 7
-    OBSTACLEWEIGHT = 7000
+    OBSTACLEWEIGHT = 10000
     TAU = dt * 10
     target = ball[0]
 
     delta = MAXACCELERATION * dt
-    l_mult_possible = [-3, -1.5, 0, 1.5, 3]
-    r_mult_possible = [-3, -1.5, 0, 1.5, 3]
+    l_mult_possible = [-5, -3, -1, 0, 1, 3, 5]
+    r_mult_possible = [-5, -3, -1, 0, 1, 3, 5]
     curr_distance_to_target = math.sqrt((x - target[0])**2 + (y - target[1])**2)
 
     # print("-------------- DWA --------------")
@@ -50,15 +50,14 @@ def dwa(vl, vr, x, y, theta, ball, barriers):
             # Calculate distance to closest obstacle from new position
             distance_to_obstacle = calculate_closest_obstacle_distance(x_predict, y_predict, barriers, None)
             distance_benefit = FORWARDWEIGHT * distance_forward
-
             # Negative benefit: once we are less than ROBOTRADIUS from collision, linearly increasing cost
             obstacle_benefit = 0.0
-            if (distance_to_obstacle < ROBOTWIDTH):
-                obstacle_benefit = OBSTACLEWEIGHT * (ROBOTWIDTH - distance_to_obstacle)
+            if (distance_to_obstacle < ROBOTWIDTH * 1.5):
+                obstacle_benefit = OBSTACLEWEIGHT * (1.5 * ROBOTWIDTH - distance_to_obstacle)
 
             benefit = distance_benefit - obstacle_benefit
-            if (round(benefit, 2) > best_benefit):
+            if (round(benefit, 3) > best_benefit):
                 best_benefit = benefit
                 best_vl, best_vr = vl_possible, vr_possible
-            
+
     return best_vl, best_vr
