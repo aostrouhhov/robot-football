@@ -251,7 +251,7 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
 
         if not obstacle_to_sectors.get(obstacle_num):
             logger.error(f'Unable to identify obstacle {obstacle_pos} position')
-            return 0, 0  # no success
+            return robot_x, robot_y  # no success
 
     ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y)).rotate(rangle)
     ball_sector = None
@@ -280,9 +280,9 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
             #     hist_val = get_histogram_value(robot_point,obstacle,sector)
             # sector.is_empty = False
         if hist_val != 0:
-                sector.is_empty = False
+            sector.is_empty = False
         else:
-                free_sectors.append(sector)
+            free_sectors.append(sector)
         hist[sector.id] = hist_val
 
         # get dist
@@ -293,13 +293,12 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
 
     if not ball_sector:
         logger.error(f'Unable to identify ball {ball_point} position')
-        return 0, 0
+        return robot_x, robot_y
 
     valleys = []
     ball_target_deg = (ball_sector.start_deg + ball_sector.end_deg) / 2
 
     logger.warning(f"maximum {max(hist.values())}")
-
 
     for k in range(Sector.COUNT):
         valley_sectors = [((k + i) % Sector.COUNT + 1,hist[(k + i) % Sector.COUNT + 1]) for i in range(VALLEY)]
