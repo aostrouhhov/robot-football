@@ -83,6 +83,10 @@ class Ball(MovingObstacle):
 
     @classmethod
     def create_randomized(cls):
+        assert constants.RANDOM_SEED != 0, "Value 0 for random seed is not allowed. If no seed needed, set None"
+        if constants.RANDOM_SEED is not None:
+            random.seed(constants.RANDOM_SEED)
+
         x = constants.WINDOW_CORNERS[2]-1
         y = constants.WINDOW_CORNERS[3]-1
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)

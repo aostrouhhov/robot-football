@@ -190,7 +190,7 @@ def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
 
     point = Point(round(top_left.x, 2), round(top_left.y, 2))
 
-    width = int(obstacle.width * 100)
+    width = int(obstacle.width * 10)
 
     for i in range(width):
         for j in range(width):
@@ -290,6 +290,7 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
             ball_sector = sector
 
     logger.warning(f'historgam {hist}')
+    logger.warning(f'historgam_max {max(hist.values())}')
 
     if not ball_sector:
         logger.error(f'Unable to identify ball {ball_point} position')
@@ -317,6 +318,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
             min_diff = diff
             target_sector = valley.target_sector
 
+    target_sector.is_chosen = True
+
     # target_sector = None
     # allowed_min_diff = 0  # FIXME: consider robot and obs size
 
@@ -326,10 +329,12 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     #         min_diff = curr_diff
     #         target_sector = sector
 
-    if not target_sector:
+    # # TODO
+    # is_path_exist, target_vec = choose_target_vector_naive(free_sectors, ball_sector)
+    # if not is_path_exist:
+    #     return robot_x, robot_y
+    if target_sector is None:
         return robot_x, robot_y
-
-    target_sector.is_chosen = True
 
     target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
     target_vec = target_line.get_direction_vector()
@@ -344,7 +349,7 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     target_x *= utils._get_sign(target_vec[0])
     target_y *= utils._get_sign(target_vec[1])
 
-    logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
+    logger.warning(f'Should go to ({target_x}, {target_y}) from {5} according to {target_vec}')
     return target_x + robot_x, target_y + robot_y
 
 
@@ -372,7 +377,7 @@ VALLEY = 5
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
 
-OBSTACLE_COEF_DRIVE_TO_ROBOT = 0.5
+OBSTACLE_COEF_DRIVE_TO_ROBOT = 1
 
 
 #  Эвриситка раз:  Если робот движется на нас -> хреновое направление
@@ -396,3 +401,53 @@ def get_coeff_direction(vx, vy, sector: Sector) -> float:
 #
 # def get_coeff_farthest(dist:float) -> float:
 #     if dist >
+
+# return target line
+def choose_target_vector_naive(free_sectors,ball_sector):
+    target_sector = None
+    min_diff = INF
+    allowed_min_diff = 0  # FIXME: consider robot and obs size
+
+    for sector in free_sectors:
+        curr_diff = abs(sector.id - ball_sector.id)
+        if curr_diff < min_diff and curr_diff >= allowed_min_diff:
+            min_diff = curr_diff
+            target_sector = sector
+
+    if not target_sector:
+        return False, None
+
+    target_sector.is_chosen = True
+
+    target_line = target_sector._get_line_by_deg((target_sector.start_deg + target_sector.end_deg) / 2)
+    target_vec = target_line.get_direction_vector()
+    return True, target_vec
+
+
+BINARY_HIST_THRESHOLD = 0.75
+
+# def choose_target_vector_smart(hist,sectors):
+#     r_high = 8.0   # if great then thisd
+#     window_width = 10 #degree
+#
+#     for k, hist_v in hist.items():
+#         if hist_v > BINARY_HIST_THRESHOLD:
+#             hist[k] = True
+#         else:
+#             hist[k] = False
+# #     now have binary hist diagram
+#
+#     free_degree_sectors
+#
+#     for k, hist_v in hist.items:
+#         if k in hist_v:
+#             s
+#
+
+
+
+
+
+
+
+
