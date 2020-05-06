@@ -65,7 +65,7 @@ def main():
     width = constants.WINDOW_WIDTH
     height = constants.WINDOW_HEIGHT
 
-    out = cv2.VideoWriter('result.mp4', cv2.VideoWriter_fourcc(*'MJPG'), fps, (width, height))
+    out = cv2.VideoWriter('result.mov', cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
 
     while True:
         screen, screen_picture = _draw_scene(
@@ -110,6 +110,7 @@ def main():
                 print('Crash!')
             print(f'Result: {time.time() - start_time} sec')
             while cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) == 1:
+                out.release()
                 cv2.waitKey(int(dt * 10))
             break
 
