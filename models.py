@@ -138,6 +138,11 @@ class Wheel(Drawable):
         cv2.circle(screen, pos, self.SCREEN_RADIUS, self.COLOR, thickness=2)
 
 
+class RobotState:
+    GOALSEEK = 0
+    WALLFOLLOW = 1
+
+
 class Robot(Drawable):
     RADIUS = constants.UNITS_RADIUS
     WIDTH = constants.UNITS_RADIUS * 2
@@ -160,6 +165,8 @@ class Robot(Drawable):
             Wheel(self._x, self._y, Wheel.Kind.LEFT, self),
             Wheel(self._x, self._y, Wheel.Kind.RIGHT, self)
         )
+
+        self.state = RobotState.GOALSEEK
 
     @property
     def angle(self):
