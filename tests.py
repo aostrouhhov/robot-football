@@ -48,5 +48,5 @@ def test_static_hist():
 if __name__ == '__main__':
     # test_no_obs()
     # test_no_obs2()
-    test_static_obs()
-    # test_static_hist()
+    # test_static_obs()
+    test_static_hist()

@@ -185,15 +185,15 @@ def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
         for j in range(width):
             pixels.append(Point(point.x + step * i, point.y - step * j))
 
-    res = 0
+    res = 0.0
     for pixel in pixels:
         if sector.contains_point(pixel):
-            dist = 1 + get_coeff_direction(vx, vy, sector) * pixel.get_dist_to_point(robot)
+            # dist = 1 + get_coeff_direction(vx, vy, sector) * pixel.get_dist_to_point(robot)
+            dist = 1 + pixel.get_dist_to_point(robot)
             dist *= math.log(dist)
             res = res + dist
-            if res == 0:
-                pass
-    return 1/res if res != 0 else 0
+            
+    return 1.0/res if res != 0 else 0
 
 
 def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_positions,
@@ -212,7 +212,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
 
     obstacle_to_sectors = {}
     obstacle_to_dist = {}
-    sector_to_obstacles = {} # obstacle with vx,vy
+    # sector_to_obstacles = {} # obstacle with vx,vy
+    obstacles = []
     # obstacle_squares = []
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
         obstacle_x, obstacle_y, vx, vy = obstacle_pos
@@ -228,12 +229,14 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
         max_dist = max(max_dist, curr_dist)
         obstacle_to_dist[obstacle_num] = curr_dist
 
+        obstacles.append(obstacle)
+
         for sector in _sectors:
             if sector.contains_square(obstacle):
                 sectors = obstacle_to_sectors.setdefault(obstacle_num, set())
                 sectors.add(sector)
-                obstacles = sector_to_obstacles.setdefault(sector.id, set())
-                obstacles.add((obstacle, vx, vy))
+                # obstacles = sector_to_obstacles.setdefault(sector.id, set())
+                # obstacles.add(obstacle)
 
         if not obstacle_to_sectors.get(obstacle_num):
             logger.error(f'Unable to identify obstacle {obstacle_pos} position')
@@ -248,24 +251,27 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
         sector.is_chosen = False
 
         min_dist = INF
-        closest_obstacle = None
+        # closest_obstacle = None
         hist_val = 0
-        for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
-            if obstacle_to_dist[obstacle] < min_dist:
-                min_dist = obstacle_to_dist[obstacle]
-                closest_obstacle = obstacle
+        # for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
+            # if obstacle_to_dist[obstacle] < min_dist:
+                # min_dist = obstacle_to_dist[obstacle]
+                # closest_obstacle = obstacle
 
-        if closest_obstacle is None:
-            free_sectors.append(sector)
-            hist_val = 0
-        else:
+        # if closest_obstacle is None:
+        #     free_sectors.append(sector)
+        #     hist_val = 0
+        for obstacle in obstacles:
             #     # hist_val = round(min_dist / max_dist, 3)
-            for obstacle in sector_to_obstacles[sector.id]:
-                print(obstacle)
-                hist_val = hist_val + get_histogram_value(robot_point, obstacle[0], sector, obstacle[1], obstacle[2])
+            # sector.is_empty = False
+            val = get_histogram_value(robot_point, obstacle, sector,1,1)
+            hist_val += val
             #     hist_val = get_histogram_value(robot_point,obstacle,sector)
-            sector.is_empty = False
-
+            # sector.is_empty = False
+        if hist_val != 0:
+                sector.is_empty = False
+        else:
+                free_sectors.append(sector)
         hist[sector.id] = hist_val
 
         # get dist
@@ -282,7 +288,6 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     target_sector = None
     allowed_min_diff = 0  # FIXME: consider robot and obs size
 
-    print(hist.items())
     for sector in free_sectors:
         curr_diff = abs(sector.id - ball_sector.id)
         if curr_diff < min_diff and curr_diff >= allowed_min_diff:
