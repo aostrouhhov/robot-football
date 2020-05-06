@@ -59,3 +59,6 @@ green = (0, 204, 0)
 ball_edge_color = (255, 255, 0)
 barrier_edge_color = (0, 255, 0)
 k = 100  # pixels per metre for graphics
+
+# Set random seed to fix results. Set None if no fixation is needed
+RANDOM_SEED = 239

@@ -5,7 +5,7 @@ from typing import List, Tuple
 import cv2
 import numpy
 
-from constants import PLAYFIELDCORNERS, red, lightblue, k, u0, v0, BARRIERRADIUS, BARRIERVELOCITYRANGE
+from constants import PLAYFIELDCORNERS, red, lightblue, k, u0, v0, BARRIERRADIUS, BARRIERVELOCITYRANGE, RANDOM_SEED
 
 
 def print_barriers(barriers):
@@ -45,6 +45,8 @@ def generate_barriers(num):
 
     # Generate num-1 random barriers
     for i in range(num - 1):
+        if RANDOM_SEED is not None:
+            random.seed(RANDOM_SEED * (i + 1))
         (bx, by, vx, vy) = (
             random.uniform(PLAYFIELDCORNERS[0], PLAYFIELDCORNERS[2]),
             random.uniform(PLAYFIELDCORNERS[1], PLAYFIELDCORNERS[3]),
@@ -54,6 +56,8 @@ def generate_barriers(num):
         barrier = [bx, by, vx, vy]
         barriers.append(barrier)
 
+    if RANDOM_SEED is not None:
+        random.seed(RANDOM_SEED)
     # Ball will be just another barrier which doesn't move
     (bx, by, vx, vy) = (
         PLAYFIELDCORNERS[2] - 1,
