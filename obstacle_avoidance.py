@@ -4,6 +4,8 @@ import numpy as np
 
 from models import RobotState
 
+OBSTACLE_DISTANCE_THRESHOLD = 0.5
+
 
 def dump_obstacle_avoidance(robot, ball, obstacles, ball_predicted_positions, obstacles_predicted_positions):
     robot_position = robot.get_pos()
@@ -52,7 +54,7 @@ def obstacles_in_way(robot, goal_angle, obstacles):
     if angle_to_goal > math.pi:
         angle_to_goal -= 2 * math.pi
     min_sonar_value = robot.min_range(obstacles, angle_from_goal, angle_to_goal)
-    return min_sonar_value < 0.5
+    return min_sonar_value < OBSTACLE_DISTANCE_THRESHOLD
 
 
 def compute_translation(robot, obstacles):
@@ -73,8 +75,8 @@ def compute_goal_seek_rot(goal_angle):
 def compute_rwf_rot(robot, obstacles):
     min_right = robot.min_range(obstacles, -math.pi / 2, 0)
     min_left = robot.min_range(obstacles, 0, math.pi / 2)
-    if max(min_right, min_left) < 0.2:
-        return 400
+    if min(min_right, min_left) < OBSTACLE_DISTANCE_THRESHOLD:
+        return 400 if min_right < min_left else -400
     else:
         desired_turn = (400 - min_right) * 2
         desired_turn = max(-400, min(desired_turn, 400))
