@@ -87,10 +87,10 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
 
         if drawable_obs_avoidance:
             target_x, target_y = drawable_obstacle_avoidance(
-                screen, robot, ball_predicted_positions, barriers_predicted_positions)
+                screen, robot, ball_predicted_positions, obstacles)
         else:
             target_x, target_y = obstacle_avoidance(
-                robot.get_pos(),robot.angle, ball_predicted_positions, barriers_predicted_positions)
+                robot.get_pos(), robot.angle, ball_predicted_positions, obstacles)
 
         cv2.imshow('robot football',  cv2.cvtColor(screen, cv2.COLOR_BGR2RGB))
 

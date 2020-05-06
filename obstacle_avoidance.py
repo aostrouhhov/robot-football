@@ -6,7 +6,7 @@ import numpy
 
 import utils
 from constants import Color
-from models import Drawable
+from models import Drawable, MovingObstacle
 
 logger = logging.getLogger('algo')
 
@@ -30,11 +30,11 @@ class Point:
 
     def __repr__(self):
         return f'({round(self.x, 2)}, {round(self.y, 2)})'
-    
-    def rotate(self,angle):
+
+    def rotate(self, angle):
         x_ = self.x * math.cos(Sector._radians(angle)) + self.y * math.sin(Sector._radians(angle))
         y_ = -self.x * math.sin(Sector._radians(angle)) + self.y * math.cos(Sector._radians(angle))
-        return Point(x_,y_)
+        return Point(x_, y_)
 
 
 class Line:
@@ -90,7 +90,7 @@ class Square:
 
 
 class Sector:
-    DEG_STEP = 10
+    DEG_STEP = 5
     COUNT = 360 // DEG_STEP
 
     FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
@@ -170,34 +170,39 @@ class Sector:
     def __repr__(self):
         return f'#{self.id} {self.lowest_line} {self.highest_line}'
 
-def get_histogram_value(robot : Point, obstacle : Square, sector : Sector):
+
+def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
     # 1 meter = 100 pixels, so iterate through points with @step
     step = 0.01
     top_left = obstacle.left_top
     pixels = []
 
-    point = Point(round(top_left.x,2),round(top_left.y,2))
+    point = Point(round(top_left.x, 2), round(top_left.y, 2))
 
     width = int(obstacle.width * 100)
-    
+
     for i in range(width):
         for j in range(width):
             pixels.append(Point(point.x + step * i, point.y - step * j))
-    
+
     res = 0
     for pixel in pixels:
         if sector.contains_point(pixel):
-            dist = pixel.get_dist_to_point(robot)
+            dist = 1 + get_coeff_direction(vx, vy, sector) * pixel.get_dist_to_point(robot)
+            dist *= math.log(dist)
             res = res + dist
-    return res
+            if res == 0:
+                pass
+    return 1/res if res != 0 else 0
 
 
-def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_positions, obstacles_predicted_positions):
+def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_positions,
+                            obstacles_predicted_positions: [MovingObstacle]):
     robot_x, robot_y = robot_position
     rangle = robot_angle
     ball_x, ball_y = ball_predicted_positions[0]
-    obstacles_positions = obstacles_predicted_positions
-    #
+    obstacles_positions = [(obstacle.x, obstacle.y, obstacle._vx, obstacle._vy) for obstacle in
+                           obstacles_predicted_positions]
 
     hist = {}  # sector to prob
 
@@ -207,16 +212,17 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
 
     obstacle_to_sectors = {}
     obstacle_to_dist = {}
-    sector_to_obstacles = {}
+    sector_to_obstacles = {} # obstacle with vx,vy
     # obstacle_squares = []
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
-        obstacle_x, obstacle_y = obstacle_pos
+        obstacle_x, obstacle_y, vx, vy = obstacle_pos
         obstacle_point = Point(obstacle_x, obstacle_y).rotate(rangle)
-        obstacle = Square(obstacle_point.x, obstacle_point.y, constants.UNITS_RADIUS * 2, coord_center=Point(robot_x, robot_y).rotate(rangle))
-        
+        obstacle = Square(obstacle_point.x, obstacle_point.y, constants.UNITS_RADIUS * 2,
+                          coord_center=Point(robot_x, robot_y).rotate(rangle))
+
         curr_dist = obstacle.get_dist_to_point(robot_point)
         if curr_dist > OBSTACLE_AWARE_DIST:
-            logger.info(f'Skipping obstacle {1+obstacle_num} {obstacle_pos}')
+            logger.info(f'Skipping obstacle {1 + obstacle_num} {obstacle_pos}')
             continue
 
         max_dist = max(max_dist, curr_dist)
@@ -226,8 +232,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
             if sector.contains_square(obstacle):
                 sectors = obstacle_to_sectors.setdefault(obstacle_num, set())
                 sectors.add(sector)
-                obstacles = sector_to_obstacles.setdefault(sector.id,set())
-                obstacles.add(obstacle) 
+                obstacles = sector_to_obstacles.setdefault(sector.id, set())
+                obstacles.add((obstacle, vx, vy))
 
         if not obstacle_to_sectors.get(obstacle_num):
             logger.error(f'Unable to identify obstacle {obstacle_pos} position')
@@ -249,15 +255,15 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
                 min_dist = obstacle_to_dist[obstacle]
                 closest_obstacle = obstacle
 
-
         if closest_obstacle is None:
             free_sectors.append(sector)
             hist_val = 0
         else:
-        #     # hist_val = round(min_dist / max_dist, 3)
+            #     # hist_val = round(min_dist / max_dist, 3)
             for obstacle in sector_to_obstacles[sector.id]:
-                hist_val = hist_val + get_histogram_value(robot_point,obstacle,sector)
-        #     hist_val = get_histogram_value(robot_point,obstacle,sector)
+                print(obstacle)
+                hist_val = hist_val + get_histogram_value(robot_point, obstacle[0], sector, obstacle[1], obstacle[2])
+            #     hist_val = get_histogram_value(robot_point,obstacle,sector)
             sector.is_empty = False
 
         hist[sector.id] = hist_val
@@ -265,7 +271,7 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
         # get dist
         if sector.contains_point(ball_point):
             ball_sector = sector
-    
+
     logger.warning(f'historgam {hist}')
 
     if not ball_sector:
@@ -275,6 +281,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     min_diff = INF
     target_sector = None
     allowed_min_diff = 0  # FIXME: consider robot and obs size
+
+    print(hist.items())
     for sector in free_sectors:
         curr_diff = abs(sector.id - ball_sector.id)
         if curr_diff < min_diff and curr_diff >= allowed_min_diff:
@@ -304,7 +312,8 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
 
 
 def drawable_dump_obstacle_avoidance(screen, robot, ball_predicted_positions, obstacles_predicted_positions):
-    result = dump_obstacle_avoidance(robot.get_pos(), robot.angle, ball_predicted_positions, obstacles_predicted_positions)
+    result = dump_obstacle_avoidance(robot.get_pos(), robot.angle, ball_predicted_positions,
+                                     obstacles_predicted_positions)
 
     for sector in _sectors:
         robot_x, robot_y = robot.get_pos()
@@ -322,3 +331,28 @@ DRAWING_MIDDLE_LANE = True
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
+
+OBSTACLE_COEF_DRIVE_TO_ROBOT = 0.5
+
+
+#  Эвриситка раз:  Если робот движется на нас -> хреновое направление
+def get_coeff_direction(vx, vy, sector: Sector) -> float:
+    direction_vector = sector._get_line_by_deg((sector.start_deg + sector.end_deg) / 2).get_direction_vector()
+    direction_obstacle = (-vx, -vy)
+
+    # no movements
+    if vx == 0 and vy == 0:
+        return 1.0
+
+    direction_vector = utils.normalize_np_vector(direction_vector, 0.1)
+    direction_obstacle = utils.normalize_np_vector(direction_obstacle, 0.1)
+    angle = numpy.arccos(
+        math.radians(direction_obstacle[0] * direction_vector[0] + direction_obstacle[1] * direction_vector[1]))
+
+    if angle <= sector.DEG_STEP:
+        return OBSTACLE_COEF_DRIVE_TO_ROBOT
+    else:
+        return 1
+#
+# def get_coeff_farthest(dist:float) -> float:
+#     if dist >
