@@ -33,11 +33,11 @@ def test_static_obs():
     assert result
 
 def test_static_hist():
-    robot = Robot(constants.x_start, constants.y_start, constants.theta_start)
+    robot = Robot(constants.x_start, constants.y_start, 1.75)
     ball = Ball(constants.WINDOW_CORNERS[2]-1, constants.WINDOW_CORNERS[3]-1, 0, 0)
 
     obstacles = [
-        MovingObstacle(constants.x_start + 1.5, constants.y_start + 1.5, 0, 0)
+        MovingObstacle(constants.x_start + 0.7, constants.y_start + 0.7, 0, 0)
         # MovingObstacle.create_randomized(),
     ]
 
