@@ -8,6 +8,7 @@ import time
 
 from typing import List, Tuple
 
+import random
 import constants
 from constants import Color
 from models import Robot, MovingObstacle, Ball
@@ -23,6 +24,8 @@ obstacle_detection = MSERObstacleDetector()
 def _generate_obstacles(cnt=10):
     barriers = []
     for i in range(cnt):
+        if constants.RANDOM_SEED is not None:
+            random.seed(constants.RANDOM_SEED * (i + 1))
         barrier = MovingObstacle.create_randomized()
         barriers.append(barrier)
     return barriers
