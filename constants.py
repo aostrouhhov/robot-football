@@ -48,3 +48,6 @@ k = 100  # pixels per metre for graphics
 OBSTACLES_COUNT = 2
 OBSTACLE_VELOCITY_RANGE = 0.1
 ROBOT_MAX_VELOCITY = 1
+
+# Fix random seed to reproduce results. Set None if no fixation is needed
+RANDOM_SEED = 239
