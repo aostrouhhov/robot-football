@@ -90,7 +90,7 @@ class Square:
 
 
 class Sector:
-    DEG_STEP = 9
+    DEG_STEP = 8
     COUNT = 360 // DEG_STEP
 
     FIRST_SECTOR_ID = 1  # todo: is not used for setting up sectors
@@ -106,6 +106,7 @@ class Sector:
 
         self.is_empty = True
         self.is_chosen = False
+        self.is_danger = False
 
         Sector.LAST_SECTOR_ID = self.id
 
@@ -130,6 +131,16 @@ class Sector:
         direct = abs(self.id - sector.id)
 
         return min(direct, transitive)
+    
+    @staticmethod
+    def get_diff(sector1, sector2):
+        sector1_deg = (sector1.start_deg + sector1.end_deg) / 2
+        sector2_deg = (sector2.start_deg + sector2.end_deg) / 2
+        
+        diff = abs(sector1_deg - sector2_deg)
+        if diff >= 180:
+            diff = abs(sector1_deg - sector2_deg - 360)
+        return diff
 
     @classmethod
     def generate_sectors(cls):
@@ -147,7 +158,7 @@ class Sector:
             a *= -1
             b *= -1
 
-        logger.info(f'deg {deg}: ({a > 0}, {b > 0})')
+        # logger.info(f'deg {deg}: ({a > 0}, {b > 0})')
         return Line(a, b, 0)
 
     def draw(self, screen, center):
@@ -159,6 +170,8 @@ class Sector:
             color = Color.RED
         elif self.is_chosen:
             color = Color.PURPLE
+        if self.is_danger:
+            color = Color.RED2
 
         if not DRAWING_MIDDLE_LANE:
             self.lowest_line.draw(screen, center, color)
@@ -182,6 +195,8 @@ class Valley:
         
         return self.target_sector._get_line_by_deg((self.target_sector.start_deg + self.target_sector.end_deg) / 2)
 
+
+# a-bd, where d is distance, d_max = @OBSTACLE_AWARE_DIST
 def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
     # 1 meter = 100 pixels, so iterate through points with @step
     step = 0.04
@@ -190,21 +205,23 @@ def get_histogram_value(robot: Point, obstacle: Square, sector: Sector, vx, vy):
 
     point = Point(round(top_left.x, 2), round(top_left.y, 2))
 
-    width = int(obstacle.width * 100)
+    # width of obstacle in pixels
+    width = int(obstacle.width * 100/4)
 
     for i in range(width):
         for j in range(width):
             pixels.append(Point(point.x + step * i, point.y - step * j))
 
     res = 0.0
+    
     for pixel in pixels:
         if sector.contains_point(pixel):
             # dist = 1 + get_coeff_direction(vx, vy, sector) * pixel.get_dist_to_point(robot)
-            dist = 1 + pixel.get_dist_to_point(robot)
-            dist *= math.log(dist)
+            dist = pixel.get_dist_to_point(robot)
+            dist = math.sqrt(2) * OBSTACLE_AWARE_DIST - dist
             res = res + dist
             
-    return 1.0/res if res != 0 else 0
+    return res
 
 
 def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_positions,
@@ -218,113 +235,106 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     hist = {}  # sector to prob
 
     # maximal distance to obstacle    
-    max_dist = 0
     robot_point = Point(0, 0)
 
-    obstacle_to_sectors = {}
-    obstacle_to_dist = {}
-    # sector_to_obstacles = {} # obstacle with vx,vy
+    sector_to_obstacles = {} # obstacle with vx,vy
     obstacles = []
     # obstacle_squares = []
     for obstacle_num, obstacle_pos in enumerate(obstacles_positions):
         obstacle_x, obstacle_y, vx, vy = obstacle_pos
         obstacle_point = Point(obstacle_x, obstacle_y).rotate(rangle)
-        obstacle = Square(obstacle_point.x, obstacle_point.y, constants.UNITS_RADIUS * 2,
+        # need to tune sector around an obstacle
+        obstacle = Square(obstacle_point.x, obstacle_point.y, constants.UNITS_RADIUS * 2 + constants.UNITS_RADIUS,
                           coord_center=Point(robot_x, robot_y).rotate(rangle))
 
         curr_dist = obstacle.get_dist_to_point(robot_point)
         if curr_dist > OBSTACLE_AWARE_DIST:
-            logger.info(f'Skipping obstacle {1 + obstacle_num} {obstacle_pos}')
+            # logger.info(f'Skipping obstacle {1 + obstacle_num} {obstacle_pos}')
             continue
-
-        max_dist = max(max_dist, curr_dist)
-        obstacle_to_dist[obstacle_num] = curr_dist
-
         obstacles.append(obstacle)
-
-        for sector in _sectors:
-            if sector.contains_square(obstacle):
-                sectors = obstacle_to_sectors.setdefault(obstacle_num, set())
-                sectors.add(sector)
-                # obstacles = sector_to_obstacles.setdefault(sector.id, set())
-                # obstacles.add(obstacle)
-
-        if not obstacle_to_sectors.get(obstacle_num):
-            logger.error(f'Unable to identify obstacle {obstacle_pos} position')
-            return robot_x, robot_y  # no success
 
     ball_point = Point(ball_x, ball_y, coord_center=Point(robot_x, robot_y)).rotate(rangle)
     ball_sector = None
-    free_sectors = []
+    
     # for each sector find closest obstacle
     for sector in _sectors:
         sector.is_empty = True
         sector.is_chosen = False
+        sector.is_danger = False
 
         min_dist = INF
-        # closest_obstacle = None
-        hist_val = 0
-        # for obstacle in [obstacle for obstacle, sectors in obstacle_to_sectors.items() if sector in sectors]:
-            # if obstacle_to_dist[obstacle] < min_dist:
-                # min_dist = obstacle_to_dist[obstacle]
-                # closest_obstacle = obstacle
 
-        # if closest_obstacle is None:
-        #     free_sectors.append(sector)
-        #     hist_val = 0
+        hist_val = 0
+        sector_to_obstacles[sector.id] = 0
         for obstacle in obstacles:
-            #     # hist_val = round(min_dist / max_dist, 3)
-            # sector.is_empty = False
             val = get_histogram_value(robot_point, obstacle, sector,1,1)
+            if val != 0:
+                sector_to_obstacles[sector.id] += 1
             hist_val += val
-            #     hist_val = get_histogram_value(robot_point,obstacle,sector)
-            # sector.is_empty = False
-        if hist_val != 0:
-            sector.is_empty = False
+        if sector_to_obstacles[sector.id] != 0:
+            hist[sector.id] = hist_val / sector_to_obstacles[sector.id]
         else:
-            free_sectors.append(sector)
-        hist[sector.id] = hist_val
+            hist[sector.id] = hist_val
 
         # get dist
         if sector.contains_point(ball_point):
             ball_sector = sector
 
-    logger.warning(f'historgam {hist}')
+    # logger.info(f'historgam {hist}')
+
+    # smooth hist
+    smoothed_hist = {i : 0 for i in range(1,Sector.COUNT + 1)}
+    
+    h_list = list(hist.values())
+    for k in range(Sector.COUNT):
+        
+        hist_vals = [(h_list[(k - i) % Sector.COUNT],h_list[(k + i) % Sector.COUNT]) for i in range(6)]
+        i = 5
+        
+        for j in range(6):
+            if j != 0:
+                smoothed_hist[k + 1] += i * hist_vals[j][0]
+                smoothed_hist[k + 1] += i * hist_vals[j][1]
+            else:
+                smoothed_hist[k + 1] += i * hist_vals[j][0]
+            i = i - 1
+        smoothed_hist[k + 1] /= 11
+        if smoothed_hist[k+1] >= TRESHOLD:
+            _sectors[k].is_empty = False
 
     if not ball_sector:
         logger.error(f'Unable to identify ball {ball_point} position')
         return robot_x, robot_y
 
     valleys = []
-    ball_target_deg = (ball_sector.start_deg + ball_sector.end_deg) / 2
-
-    logger.warning(f"maximum {max(hist.values())}")
+    danger_sectors = []
+    for k,v in smoothed_hist.items():
+        if v > DANGER:
+            _sectors[k-1].is_danger = True
+            danger_sectors.append(_sectors[k - 1])
+    
+    # logger.warning(f"smooth {smoothed_hist}")
+    # logger.info(f"maximum {max(hist.values())}")
 
     for k in range(Sector.COUNT):
-        valley_sectors = [((k + i) % Sector.COUNT + 1,hist[(k + i) % Sector.COUNT + 1]) for i in range(VALLEY)]
+        valley_sectors = [((k + i) % Sector.COUNT + 1, smoothed_hist[(k + i) % Sector.COUNT + 1]) for i in range(VALLEY)]
         if all(map(lambda x : x[1] < TRESHOLD,valley_sectors)):
             valley_sectors = list(map(lambda x : x[0], valley_sectors))
             valleys.append(Valley([sector for sector in _sectors if sector.id in valley_sectors]))
 
     # choose closest valley
-    target_sector = None
+    target_sector = _sectors[0]
     min_diff = INF
     for valley in valleys:
-        diff = abs(valley.get_target_deg() - ball_target_deg)
-        if diff >= 180:
-            diff = abs(valley.get_target_deg() - ball_target_deg - 360)
-        if diff < min_diff:
+        diff = Sector.get_diff(valley.target_sector,ball_sector)
+        if danger_sectors != []:
+            if diff < min_diff and all(map(lambda x : Sector.get_diff(valley.target_sector,x) > DANGER_AWARE_ANGLE, danger_sectors)):
+                min_diff = diff
+                target_sector = valley.target_sector
+        elif diff < min_diff:
             min_diff = diff
             target_sector = valley.target_sector
 
-    # target_sector = None
-    # allowed_min_diff = 0  # FIXME: consider robot and obs size
-
-    # for sector in free_sectors:
-    #     curr_diff = abs(sector.id - ball_sector.id)
-    #     if curr_diff < min_diff and curr_diff >= allowed_min_diff:
-    #         min_diff = curr_diff
-    #         target_sector = sector
 
     if not target_sector:
         return robot_x, robot_y
@@ -341,10 +351,11 @@ def dump_obstacle_avoidance(robot_position, robot_angle, ball_predicted_position
     else:
         target_x = MAX_DIST_TO_GO
         target_y = target_x / scale
+
     target_x *= utils._get_sign(target_vec[0])
     target_y *= utils._get_sign(target_vec[1])
 
-    logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
+    # logger.warning(f'Should go to ({target_x}, {target_y}) from {target_sector} according to {target_vec}')
     return target_x + robot_x, target_y + robot_y
 
 
@@ -360,14 +371,17 @@ def drawable_dump_obstacle_avoidance(screen, robot, ball_predicted_positions, ob
 
 
 MAX_DIST_TO_GO = 0.5
-OBSTACLE_AWARE_DIST = 1.25
+OBSTACLE_AWARE_DIST = 1.5
 
 DRAWING_HIDE_EMPTY = False
 DRAWING_MAX_LINE_POINTS = 30
 DRAWING_MIDDLE_LANE = True
 
-TRESHOLD = 0.005
-VALLEY = 3
+# need to tune
+TRESHOLD = 30
+VALLEY = 7
+DANGER_AWARE_ANGLE = 45
+DANGER = 48
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))
@@ -393,6 +407,3 @@ def get_coeff_direction(vx, vy, sector: Sector) -> float:
         return OBSTACLE_COEF_DRIVE_TO_ROBOT
     else:
         return 1
-#
-# def get_coeff_farthest(dist:float) -> float:
-#     if dist >

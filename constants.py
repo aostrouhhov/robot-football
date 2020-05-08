@@ -32,6 +32,7 @@ class Color:
     GRAY = (70, 70, 70)
     BLUE = (0, 0, 255)
     RED = (255, 100, 0)
+    RED2 = (255,0,0)
     GREEN = (0, 204, 0)
     LIGHTBLUE = (0, 120, 255)
     PURPLE = (148, 0, 201)
