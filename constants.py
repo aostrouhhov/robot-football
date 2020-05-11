@@ -42,7 +42,7 @@ class Color:
 k = 100  # pixels per metre for graphics
 
 # Game settings
-OBSTACLES_COUNT = 2
+OBSTACLES_COUNT = 10
 OBSTACLE_VELOCITY_RANGE = 0.1
 ROBOT_MAX_VELOCITY = 1
 

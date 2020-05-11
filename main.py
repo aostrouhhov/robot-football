@@ -77,7 +77,7 @@ def main():
         out.write(screen)
 
         ball_predicted_positions, barriers_predicted_positions = obstacle_detection.forward(
-            screen_picture, [(Color.RED, 1), (Color.LIGHTBLUE, 9)]
+            screen_picture, [(Color.RED, 1), (Color.LIGHTBLUE, constants.OBSTACLES_COUNT)]
         )
         ball_predicted_positions = cast_detector_coordinates(ball_predicted_positions)
         barriers_predicted_positions = cast_detector_coordinates(barriers_predicted_positions)
