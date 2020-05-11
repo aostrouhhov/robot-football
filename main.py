@@ -89,9 +89,9 @@ def main():
         # At the moment it has the same call rate as simulation update rate:
         # it is called each quantum of time as the simulation updates.
         #
-        # If obstacle_avoidance() call rate will be different than simulation update rate
+        # If obstacle_avoidance() call rate will be different from simulation update rate
         # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
-        # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
+        # in this 'while' cycle if time of calling obstacle_avoidance() is not reached yet.
 
         target_x, target_y = obstacle_avoidance(robot.get_pos(), ball_predicted_positions, barriers_predicted_positions)
         vl, vr, ro, alpha, beta = move_to_dot(target_x, target_y, robot.x, robot.y, ball_predicted_positions[0][0],
