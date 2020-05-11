@@ -3,10 +3,12 @@ from typing import List, Tuple
 import cv2
 import numpy
 
-from obstacle_detection.utils import extract_closest_points
+from obstacle_detection.obstacle_utils import extract_closest_points
 
 
 class MSERObstacleDetector:
+
+    name = 'MSER'
 
     def __init__(
             self, hull_distance_threshold: int = 10
