@@ -11,9 +11,9 @@ def dwa(robot_position, vl, vr, theta, ball, barriers, dt):
     # and a negative component for closeness to obstacles, for each of a choice of possible actions
     best_benefit = -100000
     best_vl, best_vr = vl, vr
-    FORWARDWEIGHT = 15
-    OBSTACLEWEIGHT = 10000
-    TAU = dt * 10
+    FORWARDWEIGHT = 200
+    OBSTACLEWEIGHT = 6666
+    TAU = dt * 7
     target = ball[0]
 
     x, y = robot_position[0], robot_position[1]
@@ -48,14 +48,13 @@ def dwa(robot_position, vl, vr, theta, ball, barriers, dt):
             distance_benefit = FORWARDWEIGHT * distance_forward
             # Negative benefit: once we are less than ROBOTRADIUS from collision, linearly increasing cost
             obstacle_benefit = 0.0
-            if (distance_to_obstacle < Robot.WIDTH * 1.5):
-                obstacle_benefit = OBSTACLEWEIGHT * (1.5 * Robot.WIDTH - distance_to_obstacle)
+            if (distance_to_obstacle < Robot.WIDTH):
+                obstacle_benefit = OBSTACLEWEIGHT * (Robot.WIDTH - distance_to_obstacle)
 
             benefit = distance_benefit - obstacle_benefit
-            if (round(benefit, 3) > best_benefit):
+            if (round(benefit, 3) >= best_benefit):
                 best_benefit = benefit
                 best_vl, best_vr = vl_possible, vr_possible
-
     return best_vl, best_vr
 
 def dump_obstacle_avoidance(robot_position, ball_predicted_positions, obstacles_predicted_positions):
