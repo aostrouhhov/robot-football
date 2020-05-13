@@ -4,7 +4,7 @@
 ## Как запустить
 ```
 $ pip3 install -r requirements.txt
-$ python3 planmove.py
+$ python3 main.py
 ```
 ## Как работает симуляция
 * Есть 9 игроков, которые двигаются случайнм образом
