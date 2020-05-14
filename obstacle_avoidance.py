@@ -378,10 +378,10 @@ DRAWING_MAX_LINE_POINTS = 30
 DRAWING_MIDDLE_LANE = True
 
 # need to tune
-TRESHOLD = 30
-VALLEY = 7
-DANGER_AWARE_ANGLE = 45
-DANGER = 48
+TRESHOLD = 28
+VALLEY = 3
+DANGER_AWARE_ANGLE = 50
+DANGER = 45
 
 _sectors = Sector.generate_sectors()
 logger.warning('\n'.join([str(s) for s in _sectors]))

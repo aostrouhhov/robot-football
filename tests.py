@@ -57,8 +57,7 @@ def test_vshyvost():
         obstacles = main._generate_obstacles(cnt=constants.OBSTACLES_COUNT)
         robot = Robot(constants.x_start, constants.y_start, constants.theta_start)
         result = main.run_simulation(robot, ball, obstacles,
-                   enable_detection=False,
-                   drawable_obs_avoidance=constants.DRAWABLE_OBS_AVOIDANCE)
+                   enable_detection=True)
 
         assert result
 
