@@ -53,3 +53,6 @@ ROBOT_MAX_HUNT_VELOCITY = 1.25
 
 # Fix random seed to reproduce results. Set None if no fixation is needed
 RANDOM_SEED = 239
+
+# Fix random seed to reproduce results. Set None if no fixation is needed
+RANDOM_SEED = 23

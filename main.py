@@ -62,6 +62,11 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
     barriers_predicted_positions = []
 
     target_achieved = False
+    fps = 30
+    width = constants.WINDOW_WIDTH
+    height = constants.WINDOW_HEIGHT
+
+    out = cv2.VideoWriter('result.mov', cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height))
 
     while True:
         screen, screen_picture = _draw_scene(
@@ -77,6 +82,9 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
             ball_predicted_positions = [ball.get_pos()]
             barriers_predicted_positions = [barrier.get_pos() for barrier in obstacles]
 
+        cv2.imshow('robot football', screen)
+        out.write(screen)
+
         # Planning
         #
         # Call obstacle avoidance algorithm and move to returned dot.
@@ -84,9 +92,9 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
         # At the moment it has the same call rate as simulation update rate:
         # it is called each quantum of time as the simulation updates.
         #
-        # If obstacle_avoidance() call rate will be different than simulation update rate
+        # If obstacle_avoidance() call rate will be different from simulation update rate
         # then move_to_dot_again() should be called instead of obstacle_avoidance() and move_to_dot()
-        # in this 'while' cycle if time of caliing obstacle_avoidance() is not reached yet.
+        # in this 'while' cycle if time of calling obstacle_avoidance() is not reached yet.
 
         if drawable_obs_avoidance:
             target_x, target_y = drawable_obstacle_avoidance(
@@ -116,6 +124,7 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
                 target_achieved = True
             print(f'Result: {time.time() - start_time} sec')
             while cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) == 1:
+                out.release()
                 cv2.waitKey(int(dt * 10))
             break
 
@@ -123,6 +132,7 @@ def run_simulation(robot, ball, obstacles, simulation_delay=10, enable_detection
         if cv2.getWindowProperty('robot football', cv2.WND_PROP_VISIBLE) < 1:
             break
 
+    out.release()
     cv2.destroyAllWindows()
     return target_achieved
 
