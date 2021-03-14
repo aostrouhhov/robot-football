@@ -8,8 +8,12 @@ WINDOW_CORNERS = (-4.0, -2.5, 4.0, 2.5)  # The region we will fill with obstacle
 UNITS_RADIUS = 0.14
 
 # A starting pose of robot
-x_start = -4.0 + UNITS_RADIUS
-y_start = -2.5 + UNITS_RADIUS
+x_start_left = -4.0 + UNITS_RADIUS
+y_start_left = -2.5 + UNITS_RADIUS
+
+x_start_right = 3.9 - UNITS_RADIUS
+y_start_right = -2.5 + UNITS_RADIUS
+
 theta_start = 0
 
 # Constants for graphics display

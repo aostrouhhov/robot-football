@@ -87,7 +87,7 @@ class Ball(MovingObstacle):
         if constants.RANDOM_SEED is not None:
             random.seed(constants.RANDOM_SEED)
 
-        x = constants.WINDOW_CORNERS[2]-1
+        x = constants.WINDOW_CORNERS[2]-4
         y = constants.WINDOW_CORNERS[3]-1
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
@@ -148,18 +148,18 @@ class Robot(Drawable):
 
     POS_HISTORY_LIMIT = 100
 
-    COLOR = Color.WHITE
     SCREEN_WIDTH = int(WIDTH * constants.k)
     SCREEN_RADIUS = int(RADIUS * constants.k)
     TRAIL_COLOR = Color.GRAY
     TRAIL_SCREEN_RADIUS = 3
     DIRECTION_COLOR = Color.GREEN
 
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, color):
         super().__init__(x, y)
 
         self._angle = angle
         self.pos_history = []
+        self.COLOR = color
 
         self.wheels = (
             Wheel(self._x, self._y, Wheel.Kind.LEFT, self),
