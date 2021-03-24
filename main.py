@@ -40,14 +40,12 @@ def _generate_robots(cnt=6):
     # for i in range(cnt):
     #     if constants.RANDOM_SEED is not None:
     #         random.seed(constants.RANDOM_SEED * (i + 1))
-    for i in range(2):
-        for j in range(3):
-            robot = Robot(constants.x_start_left + 2*i, constants.y_start_left + 2*j, constants.theta_start, Color.WHITE)
+    for i in range(12):
+        if i % 2 == 0:
+            robot = Robot(constants.x_start_left + i - i/3, constants.y_start_left, constants.theta_start, Color.WHITE)
             robots.append(robot)
-
-    for i in range(2):
-        for j in range(3):
-            robot = Robot(constants.x_start_right - 2*i, constants.y_start_right + 2*j, constants.theta_start, Color.YELLOW)
+        else:
+            robot = Robot(constants.x_start_left + i - i/3, constants.y_start_left, constants.theta_start, Color.YELLOW)
             robots.append(robot)
 
     return robots

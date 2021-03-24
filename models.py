@@ -86,8 +86,9 @@ class Ball(MovingObstacle):
         assert constants.RANDOM_SEED != 0, "Value 0 for random seed is not allowed. If no seed needed, set None"
         if constants.RANDOM_SEED is not None:
             random.seed(constants.RANDOM_SEED)
-        x = constants.WINDOW_CORNERS[2]-4 + random.uniform(-1, 1)
-        y = constants.WINDOW_CORNERS[3]-2.5 + random.uniform(-2, 2)
+        random.seed(None)
+        x = constants.WINDOW_CORNERS[2]-4 + random.uniform(-4, 4)
+        y = constants.WINDOW_CORNERS[3]-2.5 + random.uniform(-2.5, 2.5)
         vx = random.gauss(0.0, cls.VELOCITY_RANGE)
         vy = random.gauss(0.0, cls.VELOCITY_RANGE)
 
